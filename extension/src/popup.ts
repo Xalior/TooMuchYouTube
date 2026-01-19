@@ -52,6 +52,9 @@ if (
 
   let rules: Rule[] = [];
   let dragIndex: number | null = null;
+  let dragPlaceholder: HTMLDivElement | null = null;
+  let dragSourceRow: HTMLDivElement | null = null;
+  let dragGhost: HTMLDivElement | null = null;
   let saveTimer: number | null = null;
   function isYouTubeUrl(url: string) {
     if (!url) return false;
@@ -145,6 +148,15 @@ if (
     setTimeout(() => {
       status.textContent = '';
     }, 1500);
+  }
+
+  function renderDebugBar() {
+    if (__BUILD_MODE__ !== 'debug') return;
+    document.body.classList.add('debug-mode');
+    const bar = document.createElement('div');
+    bar.className = 'debug-bar';
+    bar.textContent = `DEBUG ${__BUILD_GIT_HASH__}.${__BUILD_TIME__}`;
+    document.body.appendChild(bar);
   }
 
   function saveRules() {
@@ -296,9 +308,29 @@ if (
     if (!(row instanceof HTMLElement)) return;
     dragIndex = Number(row.dataset.index);
     row.classList.add('dragging');
+    dragSourceRow = row as HTMLDivElement;
+    dragPlaceholder = document.createElement('div');
+    dragPlaceholder.className = 'row placeholder';
+    dragPlaceholder.setAttribute('aria-hidden', 'true');
+    dragGhost = row.cloneNode(true) as HTMLDivElement;
+    dragGhost.classList.remove('dragging');
+    dragGhost.classList.add('ghost');
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
       event.dataTransfer.setData('text/plain', String(dragIndex));
+      event.dataTransfer.setDragImage(row, 12, 12);
+    }
+    if (dragSourceRow && dragGhost && dragSourceRow.isConnected) {
+      const rowRect = dragSourceRow.getBoundingClientRect();
+      const bodyRect = rulesBody.getBoundingClientRect();
+      dragGhost.style.position = 'absolute';
+      dragGhost.style.top = `${rowRect.top - bodyRect.top}px`;
+      dragGhost.style.left = `${rowRect.left - bodyRect.left}px`;
+      dragGhost.style.width = `${rowRect.width}px`;
+      dragGhost.style.height = `${rowRect.height}px`;
+      dragSourceRow.style.display = 'none';
+      rulesBody.appendChild(dragGhost);
+      rulesBody.insertBefore(dragPlaceholder, dragSourceRow);
     }
   });
 
@@ -307,17 +339,43 @@ if (
     document.querySelectorAll('.row.dragging, .row.drag-over').forEach((row) => {
       row.classList.remove('dragging', 'drag-over');
     });
+    if (dragPlaceholder && dragPlaceholder.parentElement) {
+      dragPlaceholder.parentElement.removeChild(dragPlaceholder);
+    }
+    dragPlaceholder = null;
+    if (dragGhost && dragGhost.parentElement) {
+      dragGhost.parentElement.removeChild(dragGhost);
+    }
+    if (dragSourceRow) {
+      dragSourceRow.style.display = '';
+    }
+    dragSourceRow = null;
+    dragGhost = null;
   });
 
   rulesBody.addEventListener('dragover', (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
     const row = target.closest('.row');
-    if (!(row instanceof HTMLElement)) return;
     event.preventDefault();
-    row.classList.add('drag-over');
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';
+    }
+
+    if (!dragPlaceholder) return;
+    if (!row || row.classList.contains('dragging') || row === dragPlaceholder) {
+      if (!row) {
+        rulesBody.appendChild(dragPlaceholder);
+      }
+      return;
+    }
+
+    const rect = row.getBoundingClientRect();
+    const after = event.clientY > rect.top + rect.height / 2;
+    if (after) {
+      row.insertAdjacentElement('afterend', dragPlaceholder);
+    } else {
+      row.insertAdjacentElement('beforebegin', dragPlaceholder);
     }
   });
 
@@ -330,18 +388,32 @@ if (
   });
 
   rulesBody.addEventListener('drop', (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const row = target.closest('.row');
-    if (!(row instanceof HTMLElement)) return;
     event.preventDefault();
-    row.classList.remove('drag-over');
-    const toIndex = Number(row.dataset.index);
-    if (dragIndex === null || Number.isNaN(toIndex)) return;
+    if (dragIndex === null || !dragPlaceholder) return;
+    const ordered = Array.from(rulesBody.children) as HTMLElement[];
+    let toIndex = 0;
+    for (const child of ordered) {
+      if (child === dragPlaceholder) break;
+      if (child.classList.contains('row') && !child.classList.contains('dragging')) {
+        toIndex += 1;
+      }
+    }
     if (dragIndex !== toIndex) {
       moveRule(dragIndex, toIndex);
     }
+    if (dragPlaceholder.parentElement) {
+      dragPlaceholder.parentElement.removeChild(dragPlaceholder);
+    }
+    dragPlaceholder = null;
     dragIndex = null;
+    if (dragGhost && dragGhost.parentElement) {
+      dragGhost.parentElement.removeChild(dragGhost);
+    }
+    if (dragSourceRow) {
+      dragSourceRow.style.display = '';
+    }
+    dragSourceRow = null;
+    dragGhost = null;
   });
 
   rulesBody.addEventListener('input', (event) => {
@@ -426,6 +498,7 @@ if (
     renderRules();
     refreshActiveTabState();
     refreshQuickAddState();
+    renderDebugBar();
   });
 
   refreshActiveTabState();

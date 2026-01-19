@@ -2,11 +2,20 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const esbuild = require('esbuild');
 
 const root = path.resolve(__dirname, '..');
 const srcDir = path.join(root, 'extension', 'src');
 const outDir = path.join(root, 'extension', 'dist');
+const modeArg = process.argv[2] || '';
+const buildMode = process.env.BUILD_MODE || modeArg || 'debug';
+const isProd = buildMode === 'prod';
+
+if (!['debug', 'prod'].includes(buildMode)) {
+  console.error('Build mode must be "debug" or "prod".');
+  process.exit(1);
+}
 
 if (!fs.existsSync(srcDir)) {
   console.error(`Missing source directory: ${srcDir}`);
@@ -15,6 +24,18 @@ if (!fs.existsSync(srcDir)) {
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
+
+const git = spawnSync('git', ['rev-parse', '--short', 'HEAD'], {
+  cwd: root,
+  encoding: 'utf8'
+});
+const gitHash = git.status === 0 ? git.stdout.trim() : 'nogit';
+const now = new Date();
+const buildTime = [
+  String(now.getHours()).padStart(2, '0'),
+  String(now.getMinutes()).padStart(2, '0'),
+  String(now.getSeconds()).padStart(2, '0')
+].join('');
 
 const entries = {
   'content': path.join(srcDir, 'content.ts'),
@@ -32,10 +53,15 @@ const builds = Object.entries(entries).map(([name, entryPoint]) => {
     entryPoints: [entryPoint],
     outfile: path.join(outDir, `${name}.js`),
     bundle: true,
-    minify: true,
+    minify: isProd,
     sourcemap: false,
     target: ['es2020'],
-    format: 'iife'
+    format: 'iife',
+    define: {
+      __BUILD_MODE__: JSON.stringify(buildMode),
+      __BUILD_GIT_HASH__: JSON.stringify(gitHash),
+      __BUILD_TIME__: JSON.stringify(buildTime)
+    }
   });
 });
 

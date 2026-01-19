@@ -5,7 +5,9 @@
   "description": "Build tools for the TooMuchYouTube extension.",
   "scripts": {
     "build": "node bin/build-release.js",
-    "build:extension": "npm run domains:apply && npm run typecheck:extension && node bin/build-extension.js",
+    "build:extension": "npm run build:extension:debug",
+    "build:extension:debug": "npm run domains:apply && npm run typecheck:extension && node bin/build-extension.js debug",
+    "build:extension:prod": "npm run domains:apply && npm run typecheck:extension && node bin/build-extension.js prod",
     "typecheck:extension": "tsc -p extension/tsconfig.json --noEmit",
     "domains:fetch": "node bin/update-youtube-domains.js --fetch",
     "domains:apply": "node bin/update-youtube-domains.js",

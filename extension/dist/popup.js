@@ -1,1 +1,588 @@
-(()=>{var D=["youtu.be","youtube-nocookie.com","youtube.ae","youtube.al","youtube.am","youtube.at","youtube.az","youtube.ba","youtube.be","youtube.bg","youtube.bh","youtube.bo","youtube.by","youtube.ca","youtube.cat","youtube.ch","youtube.cl","youtube.co","youtube.co.ae","youtube.co.at","youtube.co.cr","youtube.co.hu","youtube.co.id","youtube.co.il","youtube.co.in","youtube.co.jp","youtube.co.ke","youtube.co.kr","youtube.co.ma","youtube.co.nz","youtube.co.th","youtube.co.tz","youtube.co.ug","youtube.co.uk","youtube.co.ve","youtube.co.za","youtube.co.zw","youtube.com","youtube.com.ar","youtube.com.au","youtube.com.az","youtube.com.bd","youtube.com.bh","youtube.com.bo","youtube.com.br","youtube.com.by","youtube.com.co","youtube.com.do","youtube.com.ec","youtube.com.ee","youtube.com.eg","youtube.com.es","youtube.com.gh","youtube.com.gr","youtube.com.gt","youtube.com.hk","youtube.com.hn","youtube.com.hr","youtube.com.jm","youtube.com.jo","youtube.com.kw","youtube.com.lb","youtube.com.lv","youtube.com.ly","youtube.com.mk","youtube.com.mt","youtube.com.mx","youtube.com.my","youtube.com.ng","youtube.com.ni","youtube.com.om","youtube.com.pa","youtube.com.pe","youtube.com.ph","youtube.com.pk","youtube.com.pt","youtube.com.py","youtube.com.qa","youtube.com.ro","youtube.com.sa","youtube.com.sg","youtube.com.sv","youtube.com.tn","youtube.com.tr","youtube.com.tw","youtube.com.ua","youtube.com.uy","youtube.com.ve","youtube.cr","youtube.cz","youtube.de","youtube.dk","youtube.ee","youtube.es","youtube.fi","youtube.fr","youtube.ge","youtube.gr","youtube.gt","youtube.hk","youtube.hr","youtube.hu","youtube.ie","youtube.in","youtube.iq","youtube.is","youtube.it","youtube.jo","youtube.jp","youtube.kr","youtube.kz","youtube.la","youtube.lk","youtube.lt","youtube.lu","youtube.lv","youtube.ly","youtube.ma","youtube.md","youtube.me","youtube.mk","youtube.mn","youtube.mx","youtube.my","youtube.ng","youtube.ni","youtube.nl","youtube.no","youtube.pa","youtube.pe","youtube.ph","youtube.pk","youtube.pl","youtube.pr","youtube.pt","youtube.qa","youtube.ro","youtube.rs","youtube.ru","youtube.sa","youtube.se","youtube.sg","youtube.si","youtube.sk","youtube.sn","youtube.soy","youtube.sv","youtube.tn","youtube.tv","youtube.ua","youtube.ug","youtube.uy","youtube.vn","youtubeeducation.com","youtubefanfest.com","youtubegaming.com","youtubego.co.id","youtubego.co.in","youtubego.com","youtubego.com.br","youtubego.id","youtubego.in","youtubekids.com","youtubemobilesupport.com","yt.be"],_=new Set(D);function N(k){let p=k.toLowerCase();if(_.has(p))return!0;for(let n of D)if(p.endsWith(`.${n}`))return!0;return!1}var r=document.getElementById("rulesBody"),R=document.getElementById("status"),q=document.getElementById("addRule"),T=document.getElementById("quickAddChannel"),w=document.getElementById("quickAddVideo"),L=document.getElementById("newType"),f=document.getElementById("newValue"),l=document.getElementById("newSpeed"),z=document.getElementById("editor"),Y=document.getElementById("notYoutube");if(!r||!R||!q||!T||!w||!L||!f||!l||!z||!Y)console.warn("TooMuchYouTube popup: missing required elements.");else{let h=function(e){if(!e)return!1;try{let t=new URL(e);return N(t.hostname)}catch{return!1}},S=function(e){if(!e)return"";try{let t=new URL(e);if(t.hostname==="youtu.be")return t.pathname.split("/")[1]?.split(/[?&#/]/)[0]||"";let u=t.searchParams.get("v");return u||t.pathname.startsWith("/shorts/")&&t.pathname.split("/shorts/")[1].split(/[?&#/]/)[0]||""}catch{return""}},A=function(e){let t=e.map(a=>a.trim()).filter(Boolean),u=t.find(a=>a.startsWith("@"));if(u)return u;let o=t.find(a=>/^UC[\w-]{10,}$/.test(a));return o||t[0]||""},I=function(){return new Promise(e=>{chrome.tabs.query({active:!0,currentWindow:!0},t=>{e(t&&t[0]?t[0]:null)})})},M=function(e){return new Promise(t=>{chrome.tabs.sendMessage(e,{type:"getQuickAddData"},u=>{if(chrome.runtime.lastError){t(null);return}t(u||null)})})},V=function(e){z.classList.toggle("hidden",!e),Y.classList.toggle("hidden",e)},U=function(){chrome.tabs?.query&&chrome.tabs.query({active:!0,currentWindow:!0},e=>{let t=e&&e[0]?e[0]:null,u=t?.url||t?.pendingUrl||"";V(h(u))})},i=function(e){R.textContent=e,e&&setTimeout(()=>{R.textContent=""},1500)},Q=function(){let e=j(n);chrome.storage.sync.set({rules:e},()=>{n=e,d(),i("Saved")})},v=function(){g&&window.clearTimeout(g),g=window.setTimeout(()=>{g=null,Q()},500)},d=function(){if(r.innerHTML="",n.length===0){let e=document.createElement("div");e.className="hint",e.textContent="No rules yet. Add one below.",r.appendChild(e);return}n.forEach((e,t)=>{let u=document.createElement("div");u.className="row",u.dataset.index=String(t);let o=document.createElement("div");o.className="order";let a=document.createElement("span");a.className="index",a.textContent=String(t+1);let b=document.createElement("button");b.type="button",b.className="icon-btn small drag-handle",b.textContent="\u2261",b.title="Drag to reorder",o.append(a,b);let H=document.createElement("select");H.dataset.field="type",["channel","videoId","title"].forEach(C=>{let E=document.createElement("option");E.value=C,E.textContent=p[C],e.type===C&&(E.selected=!0),H.appendChild(E)});let y=document.createElement("input");y.type="text",y.value=e.value,y.placeholder="Match text",y.dataset.field="value";let c=document.createElement("input");c.type="number",c.min="0.25",c.max="4",c.step="0.25",c.value=e.speed,c.placeholder="1.5",c.dataset.field="speed";let x=document.createElement("div");x.className="actions-inline";let m=document.createElement("button");m.type="button",m.className="icon-btn danger",m.textContent="Delete",m.dataset.action="delete",x.append(m),u.setAttribute("draggable","true"),u.append(o,H,y,c,x),r.appendChild(u)})},j=function(e){return e.map(t=>({id:t.id||crypto.randomUUID(),type:t.type,value:String(t.value||"").trim(),speed:String(t.speed||"").trim()})).filter(t=>t.value&&t.speed)},O=function(e,t){if(t<0||t>=n.length)return;let u=[...n],[o]=u.splice(e,1);u.splice(t,0,o),n=u,d(),v()},W=function(e){n=n.filter((t,u)=>u!==e),d(),v()},P=function(e,t,u){n=n.map((o,a)=>a!==e?o:{...o,[t]:u}),v()},k={rules:[]},p={channel:"Channel",title:"Title",videoId:"Video ID"},n=[],s=null,g=null;async function B(){let e=await I();if(!e||!h(e.url||e.pendingUrl||"")){T.disabled=!0,w.disabled=!0;return}let t=e.id?await M(e.id):null,u=t?.videoId||S(e.url||e.pendingUrl||""),o=A(t?.channelCandidates||[]);w.disabled=!u,T.disabled=!o}r.addEventListener("click",e=>{let t=e.target;if(!(t instanceof HTMLElement))return;let u=t.closest(".row");if(!(u instanceof HTMLElement))return;let o=Number(u.dataset.index);t.dataset.action==="delete"&&W(o)}),r.addEventListener("dragstart",e=>{let t=e.target;if(!(t instanceof HTMLElement)||!t.closest(".drag-handle"))return;let u=t.closest(".row");u instanceof HTMLElement&&(s=Number(u.dataset.index),u.classList.add("dragging"),e.dataTransfer&&(e.dataTransfer.effectAllowed="move",e.dataTransfer.setData("text/plain",String(s))))}),r.addEventListener("dragend",()=>{s=null,document.querySelectorAll(".row.dragging, .row.drag-over").forEach(e=>{e.classList.remove("dragging","drag-over")})}),r.addEventListener("dragover",e=>{let t=e.target;if(!(t instanceof HTMLElement))return;let u=t.closest(".row");u instanceof HTMLElement&&(e.preventDefault(),u.classList.add("drag-over"),e.dataTransfer&&(e.dataTransfer.dropEffect="move"))}),r.addEventListener("dragleave",e=>{let t=e.target;if(!(t instanceof HTMLElement))return;let u=t.closest(".row");u instanceof HTMLElement&&u.classList.remove("drag-over")}),r.addEventListener("drop",e=>{let t=e.target;if(!(t instanceof HTMLElement))return;let u=t.closest(".row");if(!(u instanceof HTMLElement))return;e.preventDefault(),u.classList.remove("drag-over");let o=Number(u.dataset.index);s===null||Number.isNaN(o)||(s!==o&&O(s,o),s=null)}),r.addEventListener("input",e=>{let t=e.target;if(!(t instanceof HTMLInputElement||t instanceof HTMLSelectElement))return;let u=t.closest(".row");if(!(u instanceof HTMLElement))return;let o=Number(u.dataset.index),a=t.dataset.field;a&&P(o,a,t.value)}),q.addEventListener("click",()=>{let e=f.value.trim(),t=l.value.trim();if(!e||!t){i("Add a match and speed");return}n=[...n,{id:crypto.randomUUID(),type:L.value,value:e,speed:t}],f.value="",l.value="",d(),v()}),T.addEventListener("click",async()=>{let e=await I(),t=e?.url||e?.pendingUrl||"";if(!e||!h(t)){i("Open a YouTube tab");return}let u=e.id?await M(e.id):null,o=A(u?.channelCandidates||[]);if(!o){i("Channel not found");return}L.value="channel",f.value=o,l.focus(),l.select()}),w.addEventListener("click",async()=>{let e=await I(),t=e?.url||e?.pendingUrl||"";if(!e||!h(t)){i("Open a YouTube tab");return}let o=(e.id?await M(e.id):null)?.videoId||S(t);if(!o){i("Video ID not found");return}L.value="videoId",f.value=o,l.focus(),l.select()}),chrome.storage.sync.get(k,e=>{n=e.rules||[],d(),U(),B()}),U(),B()}})();
+(() => {
+  // extension/src/domains.ts
+  var YOUTUBE_DOMAINS = [
+    "youtu.be",
+    "youtube-nocookie.com",
+    "youtube.ae",
+    "youtube.al",
+    "youtube.am",
+    "youtube.at",
+    "youtube.az",
+    "youtube.ba",
+    "youtube.be",
+    "youtube.bg",
+    "youtube.bh",
+    "youtube.bo",
+    "youtube.by",
+    "youtube.ca",
+    "youtube.cat",
+    "youtube.ch",
+    "youtube.cl",
+    "youtube.co",
+    "youtube.co.ae",
+    "youtube.co.at",
+    "youtube.co.cr",
+    "youtube.co.hu",
+    "youtube.co.id",
+    "youtube.co.il",
+    "youtube.co.in",
+    "youtube.co.jp",
+    "youtube.co.ke",
+    "youtube.co.kr",
+    "youtube.co.ma",
+    "youtube.co.nz",
+    "youtube.co.th",
+    "youtube.co.tz",
+    "youtube.co.ug",
+    "youtube.co.uk",
+    "youtube.co.ve",
+    "youtube.co.za",
+    "youtube.co.zw",
+    "youtube.com",
+    "youtube.com.ar",
+    "youtube.com.au",
+    "youtube.com.az",
+    "youtube.com.bd",
+    "youtube.com.bh",
+    "youtube.com.bo",
+    "youtube.com.br",
+    "youtube.com.by",
+    "youtube.com.co",
+    "youtube.com.do",
+    "youtube.com.ec",
+    "youtube.com.ee",
+    "youtube.com.eg",
+    "youtube.com.es",
+    "youtube.com.gh",
+    "youtube.com.gr",
+    "youtube.com.gt",
+    "youtube.com.hk",
+    "youtube.com.hn",
+    "youtube.com.hr",
+    "youtube.com.jm",
+    "youtube.com.jo",
+    "youtube.com.kw",
+    "youtube.com.lb",
+    "youtube.com.lv",
+    "youtube.com.ly",
+    "youtube.com.mk",
+    "youtube.com.mt",
+    "youtube.com.mx",
+    "youtube.com.my",
+    "youtube.com.ng",
+    "youtube.com.ni",
+    "youtube.com.om",
+    "youtube.com.pa",
+    "youtube.com.pe",
+    "youtube.com.ph",
+    "youtube.com.pk",
+    "youtube.com.pt",
+    "youtube.com.py",
+    "youtube.com.qa",
+    "youtube.com.ro",
+    "youtube.com.sa",
+    "youtube.com.sg",
+    "youtube.com.sv",
+    "youtube.com.tn",
+    "youtube.com.tr",
+    "youtube.com.tw",
+    "youtube.com.ua",
+    "youtube.com.uy",
+    "youtube.com.ve",
+    "youtube.cr",
+    "youtube.cz",
+    "youtube.de",
+    "youtube.dk",
+    "youtube.ee",
+    "youtube.es",
+    "youtube.fi",
+    "youtube.fr",
+    "youtube.ge",
+    "youtube.gr",
+    "youtube.gt",
+    "youtube.hk",
+    "youtube.hr",
+    "youtube.hu",
+    "youtube.ie",
+    "youtube.in",
+    "youtube.iq",
+    "youtube.is",
+    "youtube.it",
+    "youtube.jo",
+    "youtube.jp",
+    "youtube.kr",
+    "youtube.kz",
+    "youtube.la",
+    "youtube.lk",
+    "youtube.lt",
+    "youtube.lu",
+    "youtube.lv",
+    "youtube.ly",
+    "youtube.ma",
+    "youtube.md",
+    "youtube.me",
+    "youtube.mk",
+    "youtube.mn",
+    "youtube.mx",
+    "youtube.my",
+    "youtube.ng",
+    "youtube.ni",
+    "youtube.nl",
+    "youtube.no",
+    "youtube.pa",
+    "youtube.pe",
+    "youtube.ph",
+    "youtube.pk",
+    "youtube.pl",
+    "youtube.pr",
+    "youtube.pt",
+    "youtube.qa",
+    "youtube.ro",
+    "youtube.rs",
+    "youtube.ru",
+    "youtube.sa",
+    "youtube.se",
+    "youtube.sg",
+    "youtube.si",
+    "youtube.sk",
+    "youtube.sn",
+    "youtube.soy",
+    "youtube.sv",
+    "youtube.tn",
+    "youtube.tv",
+    "youtube.ua",
+    "youtube.ug",
+    "youtube.uy",
+    "youtube.vn",
+    "youtubeeducation.com",
+    "youtubefanfest.com",
+    "youtubegaming.com",
+    "youtubego.co.id",
+    "youtubego.co.in",
+    "youtubego.com",
+    "youtubego.com.br",
+    "youtubego.id",
+    "youtubego.in",
+    "youtubekids.com",
+    "youtubemobilesupport.com",
+    "yt.be"
+  ];
+  var DOMAIN_SET = new Set(YOUTUBE_DOMAINS);
+  function isYouTubeHost(hostname) {
+    const host = hostname.toLowerCase();
+    if (DOMAIN_SET.has(host)) return true;
+    for (const domain of YOUTUBE_DOMAINS) {
+      if (host.endsWith(`.${domain}`)) return true;
+    }
+    return false;
+  }
+
+  // extension/src/popup.ts
+  var rulesBody = document.getElementById("rulesBody");
+  var status = document.getElementById("status");
+  var addButton = document.getElementById("addRule");
+  var quickAddChannel = document.getElementById("quickAddChannel");
+  var quickAddVideo = document.getElementById("quickAddVideo");
+  var newType = document.getElementById("newType");
+  var newValue = document.getElementById("newValue");
+  var newSpeed = document.getElementById("newSpeed");
+  var editor = document.getElementById("editor");
+  var notYoutube = document.getElementById("notYoutube");
+  if (!rulesBody || !status || !addButton || !quickAddChannel || !quickAddVideo || !newType || !newValue || !newSpeed || !editor || !notYoutube) {
+    console.warn("TooMuchYouTube popup: missing required elements.");
+  } else {
+    let isYouTubeUrl = function(url) {
+      if (!url) return false;
+      try {
+        const parsed = new URL(url);
+        return isYouTubeHost(parsed.hostname);
+      } catch (err) {
+        return false;
+      }
+    }, getVideoIdFromUrl = function(url) {
+      if (!url) return "";
+      try {
+        const parsed = new URL(url);
+        if (parsed.hostname === "youtu.be") {
+          return parsed.pathname.split("/")[1]?.split(/[?&#/]/)[0] || "";
+        }
+        const v = parsed.searchParams.get("v");
+        if (v) return v;
+        if (parsed.pathname.startsWith("/shorts/")) {
+          return parsed.pathname.split("/shorts/")[1].split(/[?&#/]/)[0] || "";
+        }
+        return "";
+      } catch (err) {
+        return "";
+      }
+    }, pickChannelCandidate = function(candidates) {
+      const cleaned = candidates.map((value) => value.trim()).filter(Boolean);
+      const handle = cleaned.find((value) => value.startsWith("@"));
+      if (handle) return handle;
+      const channelId = cleaned.find((value) => /^UC[\w-]{10,}$/.test(value));
+      if (channelId) return channelId;
+      return cleaned[0] || "";
+    }, getActiveTab = function() {
+      return new Promise((resolve) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          resolve(tabs && tabs[0] ? tabs[0] : null);
+        });
+      });
+    }, requestQuickAddData = function(tabId) {
+      return new Promise((resolve) => {
+        chrome.tabs.sendMessage(tabId, { type: "getQuickAddData" }, (response) => {
+          if (chrome.runtime.lastError) {
+            resolve(null);
+            return;
+          }
+          resolve(response || null);
+        });
+      });
+    }, setEditorVisible = function(isVisible) {
+      editor.classList.toggle("hidden", !isVisible);
+      notYoutube.classList.toggle("hidden", isVisible);
+    }, refreshActiveTabState = function() {
+      if (!chrome.tabs?.query) return;
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const tab = tabs && tabs[0] ? tabs[0] : null;
+        const url = tab?.url || tab?.pendingUrl || "";
+        setEditorVisible(isYouTubeUrl(url));
+      });
+    }, showStatus = function(message) {
+      status.textContent = message;
+      if (!message) return;
+      setTimeout(() => {
+        status.textContent = "";
+      }, 1500);
+    }, renderDebugBar = function() {
+      if (false) return;
+      document.body.classList.add("debug-mode");
+      const bar = document.createElement("div");
+      bar.className = "debug-bar";
+      bar.textContent = `DEBUG ${"6fc88b0"}.${"224232"}`;
+      document.body.appendChild(bar);
+    }, saveRules = function() {
+      const normalized = normalizeRules(rules);
+      chrome.storage.sync.set({ rules: normalized }, () => {
+        rules = normalized;
+        renderRules();
+        showStatus("Saved");
+      });
+    }, scheduleSave = function() {
+      if (saveTimer) {
+        window.clearTimeout(saveTimer);
+      }
+      saveTimer = window.setTimeout(() => {
+        saveTimer = null;
+        saveRules();
+      }, 500);
+    }, renderRules = function() {
+      rulesBody.innerHTML = "";
+      if (rules.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "hint";
+        empty.textContent = "No rules yet. Add one below.";
+        rulesBody.appendChild(empty);
+        return;
+      }
+      rules.forEach((rule, index) => {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.dataset.index = String(index);
+        const orderCell = document.createElement("div");
+        orderCell.className = "order";
+        const indexEl = document.createElement("span");
+        indexEl.className = "index";
+        indexEl.textContent = String(index + 1);
+        const dragHandle = document.createElement("button");
+        dragHandle.type = "button";
+        dragHandle.className = "icon-btn small drag-handle";
+        dragHandle.textContent = "\u2261";
+        dragHandle.title = "Drag to reorder";
+        orderCell.append(indexEl, dragHandle);
+        const typeSelect = document.createElement("select");
+        typeSelect.dataset.field = "type";
+        ["channel", "videoId", "title"].forEach((type) => {
+          const option = document.createElement("option");
+          option.value = type;
+          option.textContent = typeLabels[type];
+          if (rule.type === type) option.selected = true;
+          typeSelect.appendChild(option);
+        });
+        const valueInput = document.createElement("input");
+        valueInput.type = "text";
+        valueInput.value = rule.value;
+        valueInput.placeholder = "Match text";
+        valueInput.dataset.field = "value";
+        const speedInput = document.createElement("input");
+        speedInput.type = "number";
+        speedInput.min = "0.25";
+        speedInput.max = "4";
+        speedInput.step = "0.25";
+        speedInput.value = rule.speed;
+        speedInput.placeholder = "1.5";
+        speedInput.dataset.field = "speed";
+        const actions = document.createElement("div");
+        actions.className = "actions-inline";
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "icon-btn danger";
+        deleteButton.textContent = "Delete";
+        deleteButton.dataset.action = "delete";
+        actions.append(deleteButton);
+        row.setAttribute("draggable", "true");
+        row.append(orderCell, typeSelect, valueInput, speedInput, actions);
+        rulesBody.appendChild(row);
+      });
+    }, normalizeRules = function(list) {
+      return list.map((rule) => ({
+        id: rule.id || crypto.randomUUID(),
+        type: rule.type,
+        value: String(rule.value || "").trim(),
+        speed: String(rule.speed || "").trim()
+      })).filter((rule) => rule.value && rule.speed);
+    }, moveRule = function(fromIndex, toIndex) {
+      if (toIndex < 0 || toIndex >= rules.length) return;
+      const updated = [...rules];
+      const [item] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, item);
+      rules = updated;
+      renderRules();
+      scheduleSave();
+    }, deleteRule = function(index) {
+      rules = rules.filter((_, idx) => idx !== index);
+      renderRules();
+      scheduleSave();
+    }, updateRule = function(index, field, value) {
+      rules = rules.map((rule, idx) => {
+        if (idx !== index) return rule;
+        return { ...rule, [field]: value };
+      });
+      scheduleSave();
+    };
+    const defaults = {
+      rules: []
+    };
+    const typeLabels = {
+      channel: "Channel",
+      title: "Title",
+      videoId: "Video ID"
+    };
+    let rules = [];
+    let dragIndex = null;
+    let dragPlaceholder = null;
+    let dragSourceRow = null;
+    let dragGhost = null;
+    let saveTimer = null;
+    async function refreshQuickAddState() {
+      const tab = await getActiveTab();
+      if (!tab || !isYouTubeUrl(tab.url || tab.pendingUrl || "")) {
+        quickAddChannel.disabled = true;
+        quickAddVideo.disabled = true;
+        return;
+      }
+      const data = tab.id ? await requestQuickAddData(tab.id) : null;
+      const videoId = data?.videoId || getVideoIdFromUrl(tab.url || tab.pendingUrl || "");
+      const channel = pickChannelCandidate(data?.channelCandidates || []);
+      quickAddVideo.disabled = !videoId;
+      quickAddChannel.disabled = !channel;
+    }
+    rulesBody.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const row = target.closest(".row");
+      if (!(row instanceof HTMLElement)) return;
+      const index = Number(row.dataset.index);
+      if (target.dataset.action === "delete") {
+        deleteRule(index);
+      }
+    });
+    rulesBody.addEventListener("dragstart", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (!target.closest(".drag-handle")) return;
+      const row = target.closest(".row");
+      if (!(row instanceof HTMLElement)) return;
+      dragIndex = Number(row.dataset.index);
+      row.classList.add("dragging");
+      dragSourceRow = row;
+      dragPlaceholder = document.createElement("div");
+      dragPlaceholder.className = "row placeholder";
+      dragPlaceholder.setAttribute("aria-hidden", "true");
+      dragGhost = row.cloneNode(true);
+      dragGhost.classList.remove("dragging");
+      dragGhost.classList.add("ghost");
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", String(dragIndex));
+        event.dataTransfer.setDragImage(row, 12, 12);
+      }
+      if (dragSourceRow && dragGhost && dragSourceRow.isConnected) {
+        const rowRect = dragSourceRow.getBoundingClientRect();
+        const bodyRect = rulesBody.getBoundingClientRect();
+        dragGhost.style.position = "absolute";
+        dragGhost.style.top = `${rowRect.top - bodyRect.top}px`;
+        dragGhost.style.left = `${rowRect.left - bodyRect.left}px`;
+        dragGhost.style.width = `${rowRect.width}px`;
+        dragGhost.style.height = `${rowRect.height}px`;
+        dragSourceRow.style.display = "none";
+        rulesBody.appendChild(dragGhost);
+        rulesBody.insertBefore(dragPlaceholder, dragSourceRow);
+      }
+    });
+    rulesBody.addEventListener("dragend", () => {
+      dragIndex = null;
+      document.querySelectorAll(".row.dragging, .row.drag-over").forEach((row) => {
+        row.classList.remove("dragging", "drag-over");
+      });
+      if (dragPlaceholder && dragPlaceholder.parentElement) {
+        dragPlaceholder.parentElement.removeChild(dragPlaceholder);
+      }
+      dragPlaceholder = null;
+      if (dragGhost && dragGhost.parentElement) {
+        dragGhost.parentElement.removeChild(dragGhost);
+      }
+      if (dragSourceRow) {
+        dragSourceRow.style.display = "";
+      }
+      dragSourceRow = null;
+      dragGhost = null;
+    });
+    rulesBody.addEventListener("dragover", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const row = target.closest(".row");
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = "move";
+      }
+      if (!dragPlaceholder) return;
+      if (!row || row.classList.contains("dragging") || row === dragPlaceholder) {
+        if (!row) {
+          rulesBody.appendChild(dragPlaceholder);
+        }
+        return;
+      }
+      const rect = row.getBoundingClientRect();
+      const after = event.clientY > rect.top + rect.height / 2;
+      if (after) {
+        row.insertAdjacentElement("afterend", dragPlaceholder);
+      } else {
+        row.insertAdjacentElement("beforebegin", dragPlaceholder);
+      }
+    });
+    rulesBody.addEventListener("dragleave", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const row = target.closest(".row");
+      if (!(row instanceof HTMLElement)) return;
+      row.classList.remove("drag-over");
+    });
+    rulesBody.addEventListener("drop", (event) => {
+      event.preventDefault();
+      if (dragIndex === null || !dragPlaceholder) return;
+      const ordered = Array.from(rulesBody.children);
+      let toIndex = 0;
+      for (const child of ordered) {
+        if (child === dragPlaceholder) break;
+        if (child.classList.contains("row") && !child.classList.contains("dragging")) {
+          toIndex += 1;
+        }
+      }
+      if (dragIndex !== toIndex) {
+        moveRule(dragIndex, toIndex);
+      }
+      if (dragPlaceholder.parentElement) {
+        dragPlaceholder.parentElement.removeChild(dragPlaceholder);
+      }
+      dragPlaceholder = null;
+      dragIndex = null;
+      if (dragGhost && dragGhost.parentElement) {
+        dragGhost.parentElement.removeChild(dragGhost);
+      }
+      if (dragSourceRow) {
+        dragSourceRow.style.display = "";
+      }
+      dragSourceRow = null;
+      dragGhost = null;
+    });
+    rulesBody.addEventListener("input", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) {
+        return;
+      }
+      const row = target.closest(".row");
+      if (!(row instanceof HTMLElement)) return;
+      const index = Number(row.dataset.index);
+      const field = target.dataset.field;
+      if (!field) return;
+      updateRule(index, field, target.value);
+    });
+    addButton.addEventListener("click", () => {
+      const value = newValue.value.trim();
+      const speed = newSpeed.value.trim();
+      if (!value || !speed) {
+        showStatus("Add a match and speed");
+        return;
+      }
+      rules = [
+        ...rules,
+        {
+          id: crypto.randomUUID(),
+          type: newType.value,
+          value,
+          speed
+        }
+      ];
+      newValue.value = "";
+      newSpeed.value = "";
+      renderRules();
+      scheduleSave();
+    });
+    quickAddChannel.addEventListener("click", async () => {
+      const tab = await getActiveTab();
+      const tabUrl = tab?.url || tab?.pendingUrl || "";
+      if (!tab || !isYouTubeUrl(tabUrl)) {
+        showStatus("Open a YouTube tab");
+        return;
+      }
+      const data = tab.id ? await requestQuickAddData(tab.id) : null;
+      const channel = pickChannelCandidate(data?.channelCandidates || []);
+      if (!channel) {
+        showStatus("Channel not found");
+        return;
+      }
+      newType.value = "channel";
+      newValue.value = channel;
+      newSpeed.focus();
+      newSpeed.select();
+    });
+    quickAddVideo.addEventListener("click", async () => {
+      const tab = await getActiveTab();
+      const tabUrl = tab?.url || tab?.pendingUrl || "";
+      if (!tab || !isYouTubeUrl(tabUrl)) {
+        showStatus("Open a YouTube tab");
+        return;
+      }
+      const data = tab.id ? await requestQuickAddData(tab.id) : null;
+      const videoId = data?.videoId || getVideoIdFromUrl(tabUrl);
+      if (!videoId) {
+        showStatus("Video ID not found");
+        return;
+      }
+      newType.value = "videoId";
+      newValue.value = videoId;
+      newSpeed.focus();
+      newSpeed.select();
+    });
+    chrome.storage.sync.get(defaults, (data) => {
+      rules = data.rules || [];
+      renderRules();
+      refreshActiveTabState();
+      refreshQuickAddState();
+      renderDebugBar();
+    });
+    refreshActiveTabState();
+    refreshQuickAddState();
+  }
+})();

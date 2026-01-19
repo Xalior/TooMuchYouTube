@@ -23,6 +23,10 @@ body {
   overflow: hidden;
 }
 
+body.debug-mode .wrap {
+  padding-bottom: 26px;
+}
+
 h1 {
   font-size: 16px;
   margin: 0 0 2px;
@@ -98,6 +102,7 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  position: relative;
 }
 
 .table select,
@@ -185,6 +190,26 @@ h2 {
   border-radius: 6px;
 }
 
+.row.ghost {
+  opacity: 0.35;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+
+.row.placeholder {
+  height: 30px;
+  background: repeating-linear-gradient(
+    135deg,
+    #ede8dc 0,
+    #ede8dc 6px,
+    #f7f3ea 6px,
+    #f7f3ea 12px
+  );
+  border: 2px dashed #9d9584;
+  box-shadow: inset 0 0 0 1px #fff8ea;
+  border-radius: 6px;
+}
+
 .add-row {
   display: grid;
   grid-template-columns: 150px 1fr 70px 64px;
@@ -252,4 +277,21 @@ button:hover {
 .status {
   font-size: 11px;
   color: #2d6a3c;
+}
+
+.debug-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1d1c1a;
+  color: #f7f6f2;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  border-top: 1px solid #2b2926;
 }

@@ -47,7 +47,7 @@ if (!fs.existsSync(absSourceDir)) {
   process.exit(1);
 }
 
-const build = spawnSync('npm', ['run', 'build:extension'], {
+const build = spawnSync('npm', ['run', 'build:extension:prod'], {
   cwd: root,
   stdio: 'inherit'
 });
