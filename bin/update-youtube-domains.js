@@ -16,6 +16,8 @@ const manifestPath = path.join(root, 'extension', 'manifest.json');
 
 const args = new Set(process.argv.slice(2));
 const shouldFetch = args.has('--fetch');
+const shouldCheck = args.has('--check');
+const outputJson = args.has('--json');
 
 function fetchText(url) {
   return new Promise((resolve, reject) => {
@@ -176,26 +178,69 @@ function updateManifest(patterns) {
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
 }
 
-async function main() {
-  if (shouldFetch) {
-    const raw = await fetchText(SOURCE_URL);
-    fs.mkdirSync(dataDir, { recursive: true });
-    fs.writeFileSync(sourcePath, raw);
-  }
+function readExistingDomains() {
+  if (!fs.existsSync(listPath)) return [];
+  return fs
+    .readFileSync(listPath, 'utf8')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
 
-  if (!fs.existsSync(sourcePath) && !fs.existsSync(listPath)) {
+function diffDomains(current, next) {
+  const currentSet = new Set(current);
+  const nextSet = new Set(next);
+  const added = next.filter((domain) => !currentSet.has(domain));
+  const removed = current.filter((domain) => !nextSet.has(domain));
+  return { added, removed, hasChanges: added.length > 0 || removed.length > 0 };
+}
+
+function emitStatus(payload) {
+  if (outputJson) {
+    console.log(JSON.stringify(payload, null, 2));
+    return;
+  }
+  if (payload.hasChanges) {
+    console.log(`Domains changed: +${payload.added.length} -${payload.removed.length}`);
+  } else {
+    console.log('Domains unchanged.');
+  }
+}
+
+async function main() {
+  let rawText = '';
+  if (shouldCheck) {
+    rawText = await fetchText(SOURCE_URL);
+  } else if (shouldFetch) {
+    rawText = await fetchText(SOURCE_URL);
+    fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(sourcePath, rawText);
+  } else if (fs.existsSync(sourcePath)) {
+    rawText = fs.readFileSync(sourcePath, 'utf8');
+  } else if (fs.existsSync(listPath)) {
+    rawText = fs.readFileSync(listPath, 'utf8');
+  } else {
     console.error('Missing domain list. Run with --fetch first.');
     process.exit(1);
   }
-
-  const rawText = fs.existsSync(sourcePath)
-    ? fs.readFileSync(sourcePath, 'utf8')
-    : fs.readFileSync(listPath, 'utf8');
 
   const domains = loadDomains(rawText);
   if (domains.length === 0) {
     console.error('No domains parsed from source.');
     process.exit(1);
+  }
+
+  if (shouldCheck) {
+    const current = readExistingDomains();
+    const diff = diffDomains(current, domains);
+    emitStatus({
+      hasChanges: diff.hasChanges,
+      added: diff.added,
+      removed: diff.removed,
+      currentCount: current.length,
+      nextCount: domains.length
+    });
+    return;
   }
 
   writeDomainsFile(domains);

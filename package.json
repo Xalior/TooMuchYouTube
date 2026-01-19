@@ -9,6 +9,8 @@
     "typecheck:extension": "tsc -p extension/tsconfig.json --noEmit",
     "domains:fetch": "node bin/update-youtube-domains.js --fetch",
     "domains:apply": "node bin/update-youtube-domains.js",
+    "domains:check": "node bin/update-youtube-domains.js --check",
+    "domains:check:json": "node bin/update-youtube-domains.js --check --json",
     "bump": "node bin/bump-version.js"
   },
   "config": {
