@@ -1,0 +1,15 @@
+{
+  "name": "com.xalior.chrome.toomuchyoutube",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Build tools for the TooMuchYouTube extension.",
+  "scripts": {
+    "build": "node bin/build-release.js",
+    "bump": "node bin/bump-version.js"
+  },
+  "config": {
+    "releaseNamespace": "com.xalior.chrome.toomuchyoutube",
+    "releaseDir": "releases",
+    "sourceDir": "extension"
+  }
+}
