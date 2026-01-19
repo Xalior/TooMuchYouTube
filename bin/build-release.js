@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const archiver = require('archiver');
 
 const root = path.resolve(__dirname, '..');
 const pkgPath = path.join(root, 'package.json');
@@ -25,6 +26,9 @@ const config = pkg.config || {};
 const namespace = config.releaseNamespace;
 const sourceDir = config.sourceDir || 'extension';
 const releaseDir = config.releaseDir || 'releases';
+const releaseInclude = Array.isArray(config.releaseInclude)
+  ? config.releaseInclude
+  : ['manifest.json', 'popup.html', 'popup.css', 'dist', 'icons'];
 
 if (!namespace) {
   console.error('Missing config.releaseNamespace in package.json.');
@@ -43,6 +47,15 @@ if (!fs.existsSync(absSourceDir)) {
   process.exit(1);
 }
 
+const build = spawnSync('npm', ['run', 'build:extension'], {
+  cwd: root,
+  stdio: 'inherit'
+});
+
+if (build.status !== 0) {
+  process.exit(build.status || 1);
+}
+
 const absReleaseDir = path.join(root, releaseDir);
 fs.mkdirSync(absReleaseDir, { recursive: true });
 
@@ -53,40 +66,33 @@ if (fs.existsSync(outputPath)) {
   fs.unlinkSync(outputPath);
 }
 
-const python = spawnSync(
-  'python3',
-  ['-c',
-    [
-      'import os, zipfile',
-      'root = os.environ["ROOT"]',
-      'src = os.environ["SRC"]',
-      'out = os.environ["OUT"]',
-      'if os.path.exists(out): os.remove(out)',
-      'with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as z:',
-      '  for base, dirs, files in os.walk(src):',
-      '    dirs[:] = [d for d in dirs if not d.startswith(".")]',
-      '    for f in files:',
-      '      if f.startswith(".") or f == ".DS_Store":',
-      '        continue',
-      '      full = os.path.join(base, f)',
-      '      rel = os.path.relpath(full, src)',
-      '      z.write(full, rel)',
-      'print(out)'
-    ].join('\n')
-  ],
-  {
-    env: {
-      ...process.env,
-      ROOT: root,
-      SRC: absSourceDir,
-      OUT: outputPath
-    },
-    stdio: 'inherit'
+function addPath(archive, absRoot, entry) {
+  const targetPath = path.join(absRoot, entry);
+  if (!fs.existsSync(targetPath)) {
+    console.error(`Missing include: ${targetPath}`);
+    process.exit(1);
   }
-);
 
-if (python.status !== 0) {
-  process.exit(python.status || 1);
+  const stats = fs.statSync(targetPath);
+  if (stats.isDirectory()) {
+    archive.directory(targetPath, entry);
+  } else {
+    archive.file(targetPath, { name: entry });
+  }
 }
 
-console.log(`Release created: ${outputPath}`);
+const output = fs.createWriteStream(outputPath);
+const archive = archiver('zip', { zlib: { level: 9 } });
+
+output.on('close', () => {
+  console.log(`Release created: ${outputPath}`);
+});
+
+archive.on('error', (err) => {
+  console.error(err);
+  process.exit(1);
+});
+
+archive.pipe(output);
+releaseInclude.forEach((entry) => addPath(archive, absSourceDir, entry));
+archive.finalize();

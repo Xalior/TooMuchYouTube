@@ -5,11 +5,28 @@
   "description": "Build tools for the TooMuchYouTube extension.",
   "scripts": {
     "build": "node bin/build-release.js",
+    "build:extension": "npm run domains:apply && npm run typecheck:extension && node bin/build-extension.js",
+    "typecheck:extension": "tsc -p extension/tsconfig.json --noEmit",
+    "domains:fetch": "node bin/update-youtube-domains.js --fetch",
+    "domains:apply": "node bin/update-youtube-domains.js",
     "bump": "node bin/bump-version.js"
   },
   "config": {
     "releaseNamespace": "com.xalior.chrome.toomuchyoutube",
     "releaseDir": "releases",
-    "sourceDir": "extension"
+    "sourceDir": "extension",
+    "releaseInclude": [
+      "manifest.json",
+      "popup.html",
+      "popup.css",
+      "dist",
+      "icons"
+    ]
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.280",
+    "archiver": "^6.0.2",
+    "esbuild": "^0.24.2",
+    "typescript": "^5.5.4"
   }
 }

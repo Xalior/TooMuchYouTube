@@ -1,42 +1,70 @@
-const settings = {
+import { isYouTubeHost } from './domains';
+
+type RuleType = 'channel' | 'title' | 'videoId';
+
+type Rule = {
+  id?: string;
+  type: RuleType;
+  value: string;
+  speed: string;
+};
+
+type Settings = {
+  rules: Rule[];
+};
+
+type PlayerApi = {
+  setPlaybackRate: (rate: number) => void;
+};
+
+type MatchContext = {
+  channels: string[];
+  title: string;
+  videoId: string;
+};
+
+const settings: Settings = {
   rules: []
 };
 
-function normalize(value) {
+function normalize(value: string) {
   return value.toLowerCase();
 }
 
 function getVideoIdFromUrl() {
   const url = new URL(window.location.href);
-  const v = url.searchParams.get("v");
-  if (v) return v;
-  if (url.pathname.startsWith("/shorts/")) {
-    return url.pathname.split("/shorts/")[1].split(/[?&#/]/)[0] || "";
+  if (url.hostname === 'youtu.be') {
+    return url.pathname.split('/')[1]?.split(/[?&#/]/)[0] || '';
   }
-  return "";
+  const v = url.searchParams.get('v');
+  if (v) return v;
+  if (url.pathname.startsWith('/shorts/')) {
+    return url.pathname.split('/shorts/')[1].split(/[?&#/]/)[0] || '';
+  }
+  return '';
 }
 
 function getTitle() {
-  const titleEl = document.querySelector("h1 yt-formatted-string, h1.title");
+  const titleEl = document.querySelector('h1 yt-formatted-string, h1.title');
   if (titleEl && titleEl.textContent) return titleEl.textContent.trim();
-  return document.title.replace(" - YouTube", "").trim();
+  return document.title.replace(' - YouTube', '').trim();
 }
 
 function getChannelCandidates() {
-  const candidates = new Set();
+  const candidates = new Set<string>();
 
   const textNodes = document.querySelectorAll(
-    "ytd-channel-name a, #text-container.ytd-channel-name, ytd-video-owner-renderer a, ytd-video-owner-renderer #text"
+    'ytd-channel-name a, #text-container.ytd-channel-name, ytd-video-owner-renderer a, ytd-video-owner-renderer #text'
   );
   textNodes.forEach((node) => {
     if (node && node.textContent) candidates.add(node.textContent.trim());
   });
 
   const ownerLinks = document.querySelectorAll(
-    "ytd-video-owner-renderer a[href], ytd-channel-name a[href]"
+    'ytd-video-owner-renderer a[href], ytd-channel-name a[href]'
   );
   ownerLinks.forEach((link) => {
-    const href = link.getAttribute("href") || "";
+    const href = link.getAttribute('href') || '';
     const handleMatch = href.match(/\/(@[^/?#]+)/);
     if (handleMatch) candidates.add(handleMatch[1]);
     const channelMatch = href.match(/\/channel\/([^/?#]+)/);
@@ -44,13 +72,13 @@ function getChannelCandidates() {
   });
 
   const authorMeta = document.querySelector('meta[itemprop="author"]');
-  if (authorMeta && authorMeta.getAttribute("content")) {
-    candidates.add(authorMeta.getAttribute("content").trim());
+  if (authorMeta && authorMeta.getAttribute('content')) {
+    candidates.add(authorMeta.getAttribute('content')?.trim() || '');
   }
 
   const channelIdMeta = document.querySelector('meta[itemprop="channelId"]');
-  if (channelIdMeta && channelIdMeta.getAttribute("content")) {
-    candidates.add(channelIdMeta.getAttribute("content").trim());
+  if (channelIdMeta && channelIdMeta.getAttribute('content')) {
+    candidates.add(channelIdMeta.getAttribute('content')?.trim() || '');
   }
 
   if (window.ytInitialPlayerResponse?.videoDetails?.author) {
@@ -60,64 +88,68 @@ function getChannelCandidates() {
   return Array.from(candidates).filter(Boolean);
 }
 
-function matchesRule(rule, { channels, title, videoId }) {
+function matchesRule(rule: Rule, { channels, title, videoId }: MatchContext) {
   if (!rule || !rule.value) return false;
   const ruleValue = normalize(rule.value);
 
-  if (rule.type === "channel") {
+  if (rule.type === 'channel') {
     return (
       channels.length > 0 &&
       channels.some((channel) => normalize(channel).includes(ruleValue))
     );
   }
 
-  if (rule.type === "title") {
+  if (rule.type === 'title') {
     return title && normalize(title).includes(ruleValue);
   }
 
-  if (rule.type === "videoId") {
+  if (rule.type === 'videoId') {
     return videoId && rule.value.trim() === videoId;
   }
 
   return false;
 }
 
-let appliedForKey = null;
-let appliedForVideo = null;
-let manualOverrideForVideo = null;
-const rateChangeListeners = new WeakSet();
+let appliedForKey: string | null = null;
+let appliedForVideo: HTMLVideoElement | null = null;
+let manualOverrideForVideo: HTMLVideoElement | null = null;
+const rateChangeListeners = new WeakSet<HTMLVideoElement>();
 let lastProgrammaticRateSet = 0;
 
 function getMatchKey() {
   return getVideoIdFromUrl() || window.location.href;
 }
 
-const PAGE_SYNC_CHANNEL = "TMY_PLAYBACK_RATE_SYNC";
+const PAGE_SYNC_CHANNEL = 'TMY_PLAYBACK_RATE_SYNC';
 
-function setPlaybackRateInPage(playbackSpeed) {
+function setPlaybackRateInPage(playbackSpeed: number) {
   window.postMessage(
-    { channel: PAGE_SYNC_CHANNEL, type: "setPlaybackRate", rate: playbackSpeed },
-    "*"
+    { channel: PAGE_SYNC_CHANNEL, type: 'setPlaybackRate', rate: playbackSpeed },
+    '*'
   );
 }
 
 function getPlayerApis() {
-  const apis = [];
-  const moviePlayer = document.getElementById("movie_player");
-  if (moviePlayer && typeof moviePlayer.setPlaybackRate === "function") {
+  const apis: PlayerApi[] = [];
+  const moviePlayer = document.getElementById('movie_player') as
+    | (PlayerApi & HTMLElement)
+    | null;
+  if (moviePlayer && typeof moviePlayer.setPlaybackRate === 'function') {
     apis.push(moviePlayer);
   }
 
-  const ytdPlayer = document.querySelector("ytd-player");
+  const ytdPlayer = document.querySelector('ytd-player') as
+    | (HTMLElement & { getPlayer?: () => PlayerApi | null; player_?: PlayerApi | null })
+    | null;
   if (ytdPlayer) {
-    if (typeof ytdPlayer.getPlayer === "function") {
+    if (typeof ytdPlayer.getPlayer === 'function') {
       const inner = ytdPlayer.getPlayer();
-      if (inner && typeof inner.setPlaybackRate === "function") {
+      if (inner && typeof inner.setPlaybackRate === 'function') {
         apis.push(inner);
       }
     }
     const legacy = ytdPlayer.player_;
-    if (legacy && typeof legacy.setPlaybackRate === "function") {
+    if (legacy && typeof legacy.setPlaybackRate === 'function') {
       apis.push(legacy);
     }
   }
@@ -125,17 +157,17 @@ function getPlayerApis() {
   return apis;
 }
 
-function setVideoPlaybackRate(video, playbackSpeed) {
+function setVideoPlaybackRate(video: HTMLVideoElement, playbackSpeed: number) {
   if (video.playbackRate === playbackSpeed) return;
   lastProgrammaticRateSet = Date.now();
   video.playbackRate = playbackSpeed;
 }
 
-function registerRateChangeListener(video, targetRate) {
+function registerRateChangeListener(video: HTMLVideoElement, targetRate: number) {
   if (rateChangeListeners.has(video)) return;
   rateChangeListeners.add(video);
 
-  video.addEventListener("ratechange", () => {
+  video.addEventListener('ratechange', () => {
     if (!video.isConnected) return;
     const currentRate = video.playbackRate;
     if (currentRate === targetRate) return;
@@ -148,10 +180,10 @@ function registerRateChangeListener(video, targetRate) {
   });
 }
 
-let syncIntervalId = null;
+let syncIntervalId: number | null = null;
 let syncToken = 0;
 
-function syncPlaybackRateWithPlayer(playbackSpeed) {
+function syncPlaybackRateWithPlayer(playbackSpeed: number) {
   const maxAttempts = 30;
   const retryDelayMs = 350;
   const token = (syncToken += 1);
@@ -165,7 +197,7 @@ function syncPlaybackRateWithPlayer(playbackSpeed) {
   const trySync = () => {
     if (token !== syncToken) return;
     attempts += 1;
-    const video = document.querySelector("video");
+    const video = document.querySelector('video');
     const apis = getPlayerApis();
     if (manualOverrideForVideo && manualOverrideForVideo === video) {
       if (syncIntervalId) {
@@ -178,7 +210,7 @@ function syncPlaybackRateWithPlayer(playbackSpeed) {
     setPlaybackRateInPage(playbackSpeed);
 
     apis.forEach((api) => {
-      if (typeof api.setPlaybackRate !== "function") return;
+      if (typeof api.setPlaybackRate !== 'function') return;
       try {
         api.setPlaybackRate(playbackSpeed);
       } catch (err) {
@@ -186,8 +218,8 @@ function syncPlaybackRateWithPlayer(playbackSpeed) {
       }
     });
 
-    if (video && video.playbackRate !== playbackSpeed) {
-      setVideoPlaybackRate(video, playbackSpeed);
+    if (video && (video as HTMLVideoElement).playbackRate !== playbackSpeed) {
+      setVideoPlaybackRate(video as HTMLVideoElement, playbackSpeed);
     }
 
     if (attempts >= maxAttempts) {
@@ -200,7 +232,7 @@ function syncPlaybackRateWithPlayer(playbackSpeed) {
   syncIntervalId = window.setInterval(trySync, retryDelayMs);
 }
 
-function applyPlaybackRateOnce(speed) {
+function applyPlaybackRateOnce(speed: string) {
   if (!speed) return false;
 
   const playbackSpeed = Number(speed);
@@ -208,7 +240,7 @@ function applyPlaybackRateOnce(speed) {
 
   let applied = false;
 
-  const videos = Array.from(document.querySelectorAll("video"));
+  const videos = Array.from(document.querySelectorAll('video')) as HTMLVideoElement[];
   if (videos.length === 0) return applied;
 
   videos.forEach((video) => {
@@ -221,9 +253,9 @@ function applyPlaybackRateOnce(speed) {
     const onMetadata = () => {
       setVideoPlaybackRate(video, playbackSpeed);
     };
-    video.addEventListener("loadedmetadata", onMetadata, { once: true });
+    video.addEventListener('loadedmetadata', onMetadata, { once: true });
     video.addEventListener(
-      "playing",
+      'playing',
       () => {
         syncPlaybackRateWithPlayer(playbackSpeed);
       },
@@ -238,7 +270,7 @@ function applyPlaybackRateOnce(speed) {
   return applied;
 }
 
-let pendingCheck = null;
+let pendingCheck: number | null = null;
 
 function scheduleEvaluate() {
   if (pendingCheck) return;
@@ -249,11 +281,11 @@ function scheduleEvaluate() {
 }
 
 function evaluateAndApply() {
-  if (!window.location.hostname.includes("youtube.com")) return;
+  if (!isYouTubeHost(window.location.hostname)) return;
 
   const matchKey = getMatchKey();
   if (appliedForKey === matchKey) {
-    const currentVideo = document.querySelector("video");
+    const currentVideo = document.querySelector('video') as HTMLVideoElement | null;
     if (
       appliedForVideo &&
       currentVideo &&
@@ -291,15 +323,13 @@ function refreshSettings() {
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area !== "sync") return;
-  if (
-    changes.rules
-  ) {
+  if (area !== 'sync') return;
+  if (changes.rules) {
     refreshSettings();
   }
 });
 
-window.addEventListener("yt-navigate-finish", () => {
+window.addEventListener('yt-navigate-finish', () => {
   appliedForKey = null;
   appliedForVideo = null;
   manualOverrideForVideo = null;
