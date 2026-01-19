@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TooMuchYouTube</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>TooMuchYouTube</h1>
+      <p class="hint">Match any channel, video ID, or title to set playback speed.</p>
+
+      <label class="field">
+        <span>Channels (comma or newline separated)</span>
+        <textarea id="channels" rows="3" placeholder="Marques Brownlee, Veritasium"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Video IDs (exact, comma or newline separated)</span>
+        <textarea id="videoIds" rows="3" placeholder="dQw4w9WgXcQ"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Titles (case-insensitive contains)</span>
+        <textarea id="titles" rows="3" placeholder="deep dive, interview"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Playback speed</span>
+        <input id="speed" type="number" min="0.25" max="4" step="0.25" placeholder="1.5" />
+      </label>
+
+      <div class="actions">
+        <button id="save">Save</button>
+        <span id="status" class="status" role="status"></span>
+      </div>
+
+      <p class="hint small">
+        If no matches apply, or you are not on YouTube, nothing changes.
+      </p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

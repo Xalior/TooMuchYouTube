@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "TooMuchYouTube",
+  "version": "0.1.0",
+  "description": "Adjust YouTube playback speed for matching channels, video IDs, or titles.",
+  "permissions": ["storage"],
+  "action": {
+    "default_title": "TooMuchYouTube",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
