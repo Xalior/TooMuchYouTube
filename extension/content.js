@@ -1,16 +1,6 @@
 const settings = {
-  channelMatches: "",
-  videoIdMatches: "",
-  titleMatches: "",
-  playbackSpeed: ""
+  rules: []
 };
-
-function parseList(raw) {
-  return raw
-    .split(/[,\n]/)
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-}
 
 function normalize(value) {
   return value.toLowerCase();
@@ -70,29 +60,26 @@ function getChannelCandidates() {
   return Array.from(candidates).filter(Boolean);
 }
 
-function hasMatch({ channels, title, videoId }) {
-  const channelList = parseList(settings.channelMatches);
-  const titleList = parseList(settings.titleMatches);
-  const videoIdList = parseList(settings.videoIdMatches);
+function matchesRule(rule, { channels, title, videoId }) {
+  if (!rule || !rule.value) return false;
+  const ruleValue = normalize(rule.value);
 
-  const channelMatch =
-    channelList.length > 0 &&
-    channels.length > 0 &&
-    channelList.some((entry) =>
-      channels.some((channel) => normalize(channel).includes(normalize(entry)))
+  if (rule.type === "channel") {
+    return (
+      channels.length > 0 &&
+      channels.some((channel) => normalize(channel).includes(ruleValue))
     );
+  }
 
-  const titleMatch =
-    titleList.length > 0 &&
-    title &&
-    titleList.some((entry) => normalize(title).includes(normalize(entry)));
+  if (rule.type === "title") {
+    return title && normalize(title).includes(ruleValue);
+  }
 
-  const videoIdMatch =
-    videoIdList.length > 0 &&
-    videoId &&
-    videoIdList.some((entry) => entry === videoId);
+  if (rule.type === "videoId") {
+    return videoId && rule.value.trim() === videoId;
+  }
 
-  return channelMatch || titleMatch || videoIdMatch;
+  return false;
 }
 
 let appliedForKey = null;
@@ -101,10 +88,10 @@ function getMatchKey() {
   return getVideoIdFromUrl() || window.location.href;
 }
 
-function applyPlaybackRateOnce() {
-  if (!settings.playbackSpeed) return false;
+function applyPlaybackRateOnce(speed) {
+  if (!speed) return false;
 
-  const playbackSpeed = Number(settings.playbackSpeed);
+  const playbackSpeed = Number(speed);
   if (!Number.isFinite(playbackSpeed) || playbackSpeed <= 0) return false;
 
   const videos = Array.from(document.querySelectorAll("video"));
@@ -147,21 +134,18 @@ function evaluateAndApply() {
   const title = getTitle();
   const videoId = getVideoIdFromUrl();
 
-  const matched = hasMatch({ channels, title, videoId });
-
-  if (!matched) return;
-
-  if (applyPlaybackRateOnce()) {
-    appliedForKey = matchKey;
+  for (const rule of settings.rules) {
+    if (!matchesRule(rule, { channels, title, videoId })) continue;
+    if (applyPlaybackRateOnce(rule.speed)) {
+      appliedForKey = matchKey;
+    }
+    return;
   }
 }
 
 function refreshSettings() {
   chrome.storage.sync.get(settings, (data) => {
-    settings.channelMatches = data.channelMatches || "";
-    settings.titleMatches = data.titleMatches || "";
-    settings.videoIdMatches = data.videoIdMatches || "";
-    settings.playbackSpeed = data.playbackSpeed || "";
+    settings.rules = data.rules || [];
     appliedForKey = null;
     evaluateAndApply();
   });
@@ -170,10 +154,7 @@ function refreshSettings() {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "sync") return;
   if (
-    changes.channelMatches ||
-    changes.titleMatches ||
-    changes.videoIdMatches ||
-    changes.playbackSpeed
+    changes.rules
   ) {
     refreshSettings();
   }

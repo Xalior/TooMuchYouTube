@@ -8,37 +8,47 @@
   </head>
   <body>
     <main class="wrap">
-      <h1>TooMuchYouTube</h1>
-      <p class="hint">Match any channel, video ID, or title to set playback speed.</p>
+      <header class="header">
+        <div>
+          <h1>TooMuchYouTube</h1>
+          <p class="hint">First matching rule wins. Reorder to control priority.</p>
+        </div>
+      </header>
 
-      <label class="field">
-        <span>Channels (comma or newline separated)</span>
-        <textarea id="channels" rows="3" placeholder="Marques Brownlee, Veritasium"></textarea>
-      </label>
+      <section class="panel">
+        <h2>Rules</h2>
+        <div class="table">
+          <div class="row header">
+            <span>Order</span>
+            <span>Match type</span>
+            <span>Match value</span>
+            <span>Speed</span>
+            <span>Actions</span>
+          </div>
+          <div id="rulesBody" class="body"></div>
+        </div>
+      </section>
 
-      <label class="field">
-        <span>Video IDs (exact, comma or newline separated)</span>
-        <textarea id="videoIds" rows="3" placeholder="dQw4w9WgXcQ"></textarea>
-      </label>
-
-      <label class="field">
-        <span>Titles (case-insensitive contains)</span>
-        <textarea id="titles" rows="3" placeholder="deep dive, interview"></textarea>
-      </label>
-
-      <label class="field">
-        <span>Playback speed</span>
-        <input id="speed" type="number" min="0.25" max="4" step="0.25" placeholder="1.5" />
-      </label>
+      <section class="panel">
+        <h2>Add rule</h2>
+        <div class="add-row">
+          <select id="newType">
+            <option value="channel">Channel name / handle</option>
+            <option value="videoId">Video ID</option>
+            <option value="title">Title contains</option>
+          </select>
+          <input id="newValue" type="text" placeholder="This Week In Tech" />
+          <input id="newSpeed" type="number" min="0.25" max="4" step="0.25" placeholder="2.0" />
+          <button id="addRule" type="button">Add</button>
+        </div>
+      </section>
 
       <div class="actions">
-        <button id="save">Save</button>
+        <button id="save" type="button">Save all</button>
         <span id="status" class="status" role="status"></span>
       </div>
 
-      <p class="hint small">
-        If no matches apply, or you are not on YouTube, nothing changes.
-      </p>
+      <p class="hint small">If nothing matches, playback speed stays unchanged.</p>
     </main>
     <script src="popup.js"></script>
   </body>
