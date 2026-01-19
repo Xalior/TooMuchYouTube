@@ -30,19 +30,6 @@
       }
     });
 
-    try {
-      const key = "yt-player-playback-rate";
-      const raw = localStorage.getItem(key);
-      let payload = raw ? JSON.parse(raw) : {};
-      if (!payload || typeof payload !== "object") payload = {};
-      payload.data = String(playbackSpeed);
-      if (!payload.expiration) {
-        payload.expiration = Date.now() + 365 * 24 * 60 * 60 * 1000;
-      }
-      localStorage.setItem(key, JSON.stringify(payload));
-    } catch (err) {
-      // Ignore localStorage failures.
-    }
   }
 
   window.addEventListener("message", (event) => {
