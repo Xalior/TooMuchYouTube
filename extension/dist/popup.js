@@ -259,7 +259,7 @@
       document.body.classList.add("debug-mode");
       const bar = document.createElement("div");
       bar.className = "debug-bar";
-      bar.textContent = `DEBUG ${"f05380d"}.${"224549"}`;
+      bar.textContent = `DEBUG ${"169cddb"}.${"225839"}`;
       document.body.appendChild(bar);
     }, saveRules = function() {
       const normalized = normalizeRules(rules);
@@ -299,6 +299,7 @@
         dragHandle.className = "icon-btn small drag-handle";
         dragHandle.textContent = "\u2261";
         dragHandle.title = "Drag to reorder";
+        dragHandle.draggable = false;
         orderCell.append(indexEl, dragHandle);
         const typeSelect = document.createElement("select");
         typeSelect.dataset.field = "type";
@@ -358,6 +359,73 @@
         return { ...rule, [field]: value };
       });
       scheduleSave();
+    }, isInteractiveTarget = function(target) {
+      const handle = target.closest(".drag-handle");
+      if (handle) return false;
+      return Boolean(target.closest("input, select, textarea, button"));
+    }, beginDrag = function(row, pointerId) {
+      dragIndex = Number(row.dataset.index);
+      dragPointerId = pointerId;
+      dragSourceRow = row;
+      dragOrigin = document.createElement("div");
+      dragOrigin.className = "row drag-origin";
+      dragOrigin.setAttribute("aria-hidden", "true");
+      dragPlaceholder = document.createElement("div");
+      dragPlaceholder.className = "row drag-placeholder";
+      dragPlaceholder.setAttribute("aria-hidden", "true");
+      dragSourceRow.style.display = "none";
+      rulesBody.insertBefore(dragOrigin, dragSourceRow);
+      rulesBody.insertBefore(dragPlaceholder, dragSourceRow);
+      document.body.classList.add("no-select");
+    }, updatePlaceholder = function(clientX, clientY) {
+      if (!dragPlaceholder) return;
+      const target = document.elementFromPoint(clientX, clientY);
+      if (!(target instanceof HTMLElement)) return;
+      const row = target.closest(".row");
+      if (!row || row === dragPlaceholder || row === dragOrigin) {
+        rulesBody.appendChild(dragPlaceholder);
+        return;
+      }
+      if (row === dragSourceRow) return;
+      const rect = row.getBoundingClientRect();
+      const after = clientY > rect.top + rect.height / 2;
+      if (after) {
+        row.insertAdjacentElement("afterend", dragPlaceholder);
+      } else {
+        row.insertAdjacentElement("beforebegin", dragPlaceholder);
+      }
+    }, finalizeDrag = function() {
+      if (dragIndex === null) return;
+      if (dragPlaceholder) {
+        const ordered = Array.from(rulesBody.children);
+        let toIndex = 0;
+        for (const child of ordered) {
+          if (child === dragPlaceholder) break;
+          if (child.classList.contains("row") && child !== dragSourceRow && child !== dragOrigin && child !== dragPlaceholder) {
+            toIndex += 1;
+          }
+        }
+        if (dragIndex !== toIndex) {
+          moveRule(dragIndex, toIndex);
+        }
+      }
+      cleanupDrag();
+    }, cleanupDrag = function() {
+      if (dragOrigin && dragOrigin.parentElement) {
+        dragOrigin.parentElement.removeChild(dragOrigin);
+      }
+      if (dragPlaceholder && dragPlaceholder.parentElement) {
+        dragPlaceholder.parentElement.removeChild(dragPlaceholder);
+      }
+      if (dragSourceRow) {
+        dragSourceRow.style.display = "";
+      }
+      dragIndex = null;
+      dragOrigin = null;
+      dragPlaceholder = null;
+      dragSourceRow = null;
+      dragPointerId = null;
+      document.body.classList.remove("no-select");
     };
     const defaults = {
       rules: []
@@ -368,6 +436,11 @@
       videoId: "Video ID"
     };
     let rules = [];
+    let dragIndex = null;
+    let dragPlaceholder = null;
+    let dragOrigin = null;
+    let dragSourceRow = null;
+    let dragPointerId = null;
     let saveTimer = null;
     async function refreshQuickAddState() {
       const tab = await getActiveTab();
@@ -391,6 +464,28 @@
       if (target.dataset.action === "delete") {
         deleteRule(index);
       }
+    });
+    rulesBody.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (isInteractiveTarget(target)) return;
+      const row = target.closest(".row");
+      if (!(row instanceof HTMLDivElement)) return;
+      beginDrag(row, event.pointerId);
+      event.target.setPointerCapture(event.pointerId);
+    });
+    rulesBody.addEventListener("pointermove", (event) => {
+      if (dragPointerId === null || event.pointerId !== dragPointerId) return;
+      updatePlaceholder(event.clientX, event.clientY);
+    });
+    rulesBody.addEventListener("pointerup", (event) => {
+      if (dragPointerId === null || event.pointerId !== dragPointerId) return;
+      finalizeDrag();
+    });
+    rulesBody.addEventListener("pointercancel", (event) => {
+      if (dragPointerId === null || event.pointerId !== dragPointerId) return;
+      cleanupDrag();
     });
     rulesBody.addEventListener("input", (event) => {
       const target = event.target;

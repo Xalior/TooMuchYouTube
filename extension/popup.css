@@ -23,6 +23,11 @@ body {
   overflow: hidden;
 }
 
+body.no-select,
+body.no-select * {
+  user-select: none;
+}
+
 body.debug-mode .wrap {
   padding-bottom: 26px;
 }
@@ -190,24 +195,20 @@ h2 {
   border-radius: 6px;
 }
 
-.row.ghost {
-  opacity: 0.35;
-  filter: grayscale(1);
-  pointer-events: none;
+.row.drag-origin,
+.row.drag-placeholder {
+  height: 32px;
+  border-radius: 8px;
 }
 
-.row.placeholder {
-  height: 30px;
-  background: repeating-linear-gradient(
-    135deg,
-    #ede8dc 0,
-    #ede8dc 6px,
-    #f7f3ea 6px,
-    #f7f3ea 12px
-  );
-  border: 2px dashed #9d9584;
-  box-shadow: inset 0 0 0 1px #fff8ea;
-  border-radius: 6px;
+.row.drag-origin {
+  background: #f6d63b;
+  border: 2px solid #d6b92f;
+}
+
+.row.drag-placeholder {
+  background: #2f8a4a;
+  border: 2px dashed #1f6a36;
 }
 
 .add-row {
