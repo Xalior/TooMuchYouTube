@@ -17,7 +17,6 @@ type QuickAddData = {
 
 const rulesBody = document.getElementById('rulesBody') as HTMLDivElement | null;
 const status = document.getElementById('status') as HTMLSpanElement | null;
-const saveButton = document.getElementById('save') as HTMLButtonElement | null;
 const addButton = document.getElementById('addRule') as HTMLButtonElement | null;
 const quickAddChannel = document.getElementById('quickAddChannel') as HTMLButtonElement | null;
 const quickAddVideo = document.getElementById('quickAddVideo') as HTMLButtonElement | null;
@@ -30,7 +29,6 @@ const notYoutube = document.getElementById('notYoutube') as HTMLElement | null;
 if (
   !rulesBody ||
   !status ||
-  !saveButton ||
   !addButton ||
   !quickAddChannel ||
   !quickAddVideo ||
@@ -53,6 +51,8 @@ if (
   };
 
   let rules: Rule[] = [];
+  let dragIndex: number | null = null;
+  let saveTimer: number | null = null;
   function isYouTubeUrl(url: string) {
     if (!url) return false;
     try {
@@ -147,6 +147,25 @@ if (
     }, 1500);
   }
 
+  function saveRules() {
+    const normalized = normalizeRules(rules);
+    chrome.storage.sync.set({ rules: normalized }, () => {
+      rules = normalized;
+      renderRules();
+      showStatus('Saved');
+    });
+  }
+
+  function scheduleSave() {
+    if (saveTimer) {
+      window.clearTimeout(saveTimer);
+    }
+    saveTimer = window.setTimeout(() => {
+      saveTimer = null;
+      saveRules();
+    }, 500);
+  }
+
   function renderRules() {
     rulesBody.innerHTML = '';
 
@@ -170,21 +189,13 @@ if (
       indexEl.className = 'index';
       indexEl.textContent = String(index + 1);
 
-      const upButton = document.createElement('button');
-      upButton.type = 'button';
-      upButton.className = 'icon-btn small';
-      upButton.textContent = '\u25B2';
-      upButton.dataset.action = 'up';
-      upButton.disabled = index === 0;
+      const dragHandle = document.createElement('button');
+      dragHandle.type = 'button';
+      dragHandle.className = 'icon-btn small drag-handle';
+      dragHandle.textContent = '\u2261';
+      dragHandle.title = 'Drag to reorder';
 
-      const downButton = document.createElement('button');
-      downButton.type = 'button';
-      downButton.className = 'icon-btn small';
-      downButton.textContent = '\u25BC';
-      downButton.dataset.action = 'down';
-      downButton.disabled = index === rules.length - 1;
-
-      orderCell.append(indexEl, upButton, downButton);
+      orderCell.append(indexEl, dragHandle);
 
       const typeSelect = document.createElement('select');
       typeSelect.dataset.field = 'type';
@@ -216,12 +227,13 @@ if (
 
       const deleteButton = document.createElement('button');
       deleteButton.type = 'button';
-      deleteButton.className = 'icon-btn';
+      deleteButton.className = 'icon-btn danger';
       deleteButton.textContent = 'Delete';
       deleteButton.dataset.action = 'delete';
 
       actions.append(deleteButton);
 
+      row.setAttribute('draggable', 'true');
       row.append(orderCell, typeSelect, valueInput, speedInput, actions);
       rulesBody.appendChild(row);
     });
@@ -245,11 +257,13 @@ if (
     updated.splice(toIndex, 0, item);
     rules = updated;
     renderRules();
+    scheduleSave();
   }
 
   function deleteRule(index: number) {
     rules = rules.filter((_, idx) => idx !== index);
     renderRules();
+    scheduleSave();
   }
 
   function updateRule(index: number, field: string, value: string) {
@@ -257,6 +271,7 @@ if (
       if (idx !== index) return rule;
       return { ...rule, [field]: value } as Rule;
     });
+    scheduleSave();
   }
 
   rulesBody.addEventListener('click', (event) => {
@@ -267,17 +282,66 @@ if (
     if (!(row instanceof HTMLElement)) return;
     const index = Number(row.dataset.index);
 
-    if (target.dataset.action === 'up') {
-      moveRule(index, index - 1);
-    }
-
-    if (target.dataset.action === 'down') {
-      moveRule(index, index + 1);
-    }
-
     if (target.dataset.action === 'delete') {
       deleteRule(index);
     }
+  });
+
+  rulesBody.addEventListener('dragstart', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (!target.closest('.drag-handle')) return;
+
+    const row = target.closest('.row');
+    if (!(row instanceof HTMLElement)) return;
+    dragIndex = Number(row.dataset.index);
+    row.classList.add('dragging');
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(dragIndex));
+    }
+  });
+
+  rulesBody.addEventListener('dragend', () => {
+    dragIndex = null;
+    document.querySelectorAll('.row.dragging, .row.drag-over').forEach((row) => {
+      row.classList.remove('dragging', 'drag-over');
+    });
+  });
+
+  rulesBody.addEventListener('dragover', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const row = target.closest('.row');
+    if (!(row instanceof HTMLElement)) return;
+    event.preventDefault();
+    row.classList.add('drag-over');
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+  });
+
+  rulesBody.addEventListener('dragleave', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const row = target.closest('.row');
+    if (!(row instanceof HTMLElement)) return;
+    row.classList.remove('drag-over');
+  });
+
+  rulesBody.addEventListener('drop', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const row = target.closest('.row');
+    if (!(row instanceof HTMLElement)) return;
+    event.preventDefault();
+    row.classList.remove('drag-over');
+    const toIndex = Number(row.dataset.index);
+    if (dragIndex === null || Number.isNaN(toIndex)) return;
+    if (dragIndex !== toIndex) {
+      moveRule(dragIndex, toIndex);
+    }
+    dragIndex = null;
   });
 
   rulesBody.addEventListener('input', (event) => {
@@ -316,6 +380,7 @@ if (
     newValue.value = '';
     newSpeed.value = '';
     renderRules();
+    scheduleSave();
   });
 
   quickAddChannel.addEventListener('click', async () => {
@@ -354,15 +419,6 @@ if (
     newValue.value = videoId;
     newSpeed.focus();
     newSpeed.select();
-  });
-
-  saveButton.addEventListener('click', () => {
-    const normalized = normalizeRules(rules);
-    chrome.storage.sync.set({ rules: normalized }, () => {
-      rules = normalized;
-      renderRules();
-      showStatus('Saved');
-    });
   });
 
   chrome.storage.sync.get(defaults, (data) => {

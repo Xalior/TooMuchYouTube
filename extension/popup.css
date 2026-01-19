@@ -46,10 +46,6 @@ h2 {
   padding-right: 4px;
 }
 
-.hidden {
-  display: none;
-}
-
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -59,6 +55,10 @@ h2 {
   justify-content: center;
   align-items: center;
   text-align: center;
+}
+
+.hidden {
+  display: none;
 }
 
 .header {
@@ -82,7 +82,7 @@ h2 {
 
 .table .row {
   display: grid;
-  grid-template-columns: 68px 120px 1fr 64px 64px;
+  grid-template-columns: 52px 120px 1fr 64px 64px;
   gap: 6px;
   align-items: center;
   font-size: 11px;
@@ -147,11 +147,42 @@ h2 {
   background: #33312e;
 }
 
+.icon-btn.danger {
+  background: #b22a2a;
+  border-color: #9c2424;
+}
+
+.icon-btn.danger:hover {
+  background: #9c2424;
+}
+
 .icon-btn.small {
   min-width: 24px;
   min-height: 20px;
   padding: 0 4px;
   font-size: 12px;
+}
+
+.drag-handle {
+  background: #5f5b52;
+  cursor: grab;
+}
+
+.drag-handle:hover {
+  background: #4b4740;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.row.dragging {
+  opacity: 0.6;
+}
+
+.row.drag-over {
+  outline: 1px dashed #b8b2a4;
+  border-radius: 6px;
 }
 
 .add-row {
