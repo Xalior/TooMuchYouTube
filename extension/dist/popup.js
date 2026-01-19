@@ -186,9 +186,10 @@
   var newType = document.getElementById("newType");
   var newValue = document.getElementById("newValue");
   var newSpeed = document.getElementById("newSpeed");
+  var debugInfo = document.getElementById("debugInfo");
   var editor = document.getElementById("editor");
   var notYoutube = document.getElementById("notYoutube");
-  if (!rulesBody || !status || !addButton || !quickAddChannel || !quickAddVideo || !newType || !newValue || !newSpeed || !editor || !notYoutube) {
+  if (!rulesBody || !status || !addButton || !quickAddChannel || !quickAddVideo || !newType || !newValue || !newSpeed || !debugInfo || !editor || !notYoutube) {
     console.warn("TooMuchYouTube popup: missing required elements.");
   } else {
     let isYouTubeUrl = function(url) {
@@ -256,11 +257,8 @@
       }, 1500);
     }, renderDebugBar = function() {
       if (false) return;
-      document.body.classList.add("debug-mode");
-      const bar = document.createElement("div");
-      bar.className = "debug-bar";
-      bar.textContent = `DEBUG ${"58a0bc6"}.${"230743"}`;
-      document.body.appendChild(bar);
+      debugInfo.textContent = `DEBUG ${"1ffca61"}.${"232343"}`;
+      debugInfo.classList.remove("hidden");
     }, saveRules = function() {
       const normalized = normalizeRules(rules);
       chrome.storage.sync.set({ rules: normalized }, () => {

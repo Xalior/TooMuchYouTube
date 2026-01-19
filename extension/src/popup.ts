@@ -23,6 +23,7 @@ const quickAddVideo = document.getElementById('quickAddVideo') as HTMLButtonElem
 const newType = document.getElementById('newType') as HTMLSelectElement | null;
 const newValue = document.getElementById('newValue') as HTMLInputElement | null;
 const newSpeed = document.getElementById('newSpeed') as HTMLInputElement | null;
+const debugInfo = document.getElementById('debugInfo') as HTMLSpanElement | null;
 const editor = document.getElementById('editor') as HTMLElement | null;
 const notYoutube = document.getElementById('notYoutube') as HTMLElement | null;
 
@@ -35,6 +36,7 @@ if (
   !newType ||
   !newValue ||
   !newSpeed ||
+  !debugInfo ||
   !editor ||
   !notYoutube
 ) {
@@ -152,11 +154,8 @@ if (
 
   function renderDebugBar() {
     if (__BUILD_MODE__ !== 'debug') return;
-    document.body.classList.add('debug-mode');
-    const bar = document.createElement('div');
-    bar.className = 'debug-bar';
-    bar.textContent = `DEBUG ${__BUILD_GIT_HASH__}.${__BUILD_TIME__}`;
-    document.body.appendChild(bar);
+    debugInfo.textContent = `DEBUG ${__BUILD_GIT_HASH__}.${__BUILD_TIME__}`;
+    debugInfo.classList.remove('hidden');
   }
 
   function saveRules() {
