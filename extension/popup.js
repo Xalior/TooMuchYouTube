@@ -5,6 +5,8 @@ const addButton = document.getElementById("addRule");
 const newType = document.getElementById("newType");
 const newValue = document.getElementById("newValue");
 const newSpeed = document.getElementById("newSpeed");
+const editor = document.getElementById("editor");
+const notYoutube = document.getElementById("notYoutube");
 
 const defaults = {
   rules: []
@@ -17,6 +19,34 @@ const typeLabels = {
 };
 
 let rules = [];
+
+function isYouTubeUrl(url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.hostname === "youtu.be" ||
+      parsed.hostname.endsWith("youtube.com")
+    );
+  } catch (err) {
+    return false;
+  }
+}
+
+function setEditorVisible(isVisible) {
+  if (!editor || !notYoutube) return;
+  editor.classList.toggle("hidden", !isVisible);
+  notYoutube.classList.toggle("hidden", isVisible);
+}
+
+function refreshActiveTabState() {
+  if (!chrome.tabs?.query) return;
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs && tabs[0] ? tabs[0] : null;
+    const url = tab?.url || tab?.pendingUrl || "";
+    setEditorVisible(isYouTubeUrl(url));
+  });
+}
 
 function showStatus(message) {
   status.textContent = message;
@@ -208,3 +238,5 @@ chrome.storage.sync.get(defaults, (data) => {
   rules = data.rules || [];
   renderRules();
 });
+
+refreshActiveTabState();

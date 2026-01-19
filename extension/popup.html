@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <main class="wrap">
+    <main class="wrap" id="editor">
       <header class="header">
         <div>
           <h1>TooMuchYouTube</h1>
@@ -50,6 +50,10 @@
 
       <p class="hint small">If nothing matches, playback speed stays unchanged.</p>
     </main>
+    <div id="notYoutube" class="panel empty-state hidden" role="status">
+      <h2>Open YouTube</h2>
+      <p class="hint">Switch to a YouTube tab to edit playback rules.</p>
+    </div>
     <script src="popup.js"></script>
   </body>
 </html>
