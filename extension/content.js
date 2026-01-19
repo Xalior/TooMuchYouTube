@@ -95,31 +95,39 @@ function hasMatch({ channels, title, videoId }) {
   return channelMatch || titleMatch || videoIdMatch;
 }
 
-function applyPlaybackRate() {
-  if (!settings.playbackSpeed) return;
+let appliedForKey = null;
+
+function getMatchKey() {
+  return getVideoIdFromUrl() || window.location.href;
+}
+
+function applyPlaybackRateOnce() {
+  if (!settings.playbackSpeed) return false;
 
   const playbackSpeed = Number(settings.playbackSpeed);
-  if (!Number.isFinite(playbackSpeed) || playbackSpeed <= 0) return;
+  if (!Number.isFinite(playbackSpeed) || playbackSpeed <= 0) return false;
 
   const videos = Array.from(document.querySelectorAll("video"));
-  if (videos.length === 0) return;
+  if (videos.length === 0) return false;
 
+  let applied = false;
   videos.forEach((video) => {
-    if (video.playbackRate !== playbackSpeed) {
+    if (video.readyState >= 1) {
       video.playbackRate = playbackSpeed;
+      applied = true;
+      return;
     }
     const onMetadata = () => {
-      if (video.playbackRate !== playbackSpeed) {
-        video.playbackRate = playbackSpeed;
-      }
-      video.removeEventListener("loadedmetadata", onMetadata);
+      video.playbackRate = playbackSpeed;
     };
-    video.addEventListener("loadedmetadata", onMetadata);
+    video.addEventListener("loadedmetadata", onMetadata, { once: true });
+    applied = true;
   });
+
+  return applied;
 }
 
 let pendingCheck = null;
-let hasLoggedDebug = false;
 
 function scheduleEvaluate() {
   if (pendingCheck) return;
@@ -132,39 +140,20 @@ function scheduleEvaluate() {
 function evaluateAndApply() {
   if (!window.location.hostname.includes("youtube.com")) return;
 
+  const matchKey = getMatchKey();
+  if (appliedForKey === matchKey) return;
+
   const channels = getChannelCandidates();
   const title = getTitle();
   const videoId = getVideoIdFromUrl();
 
   const matched = hasMatch({ channels, title, videoId });
 
-  if (!matched) {
-    if (!hasLoggedDebug) {
-      hasLoggedDebug = true;
-      console.debug("[TooMuchYouTube] No match", {
-        channels,
-        title,
-        videoId,
-        channelMatches: parseList(settings.channelMatches),
-        titleMatches: parseList(settings.titleMatches),
-        videoIdMatches: parseList(settings.videoIdMatches),
-        playbackSpeed: settings.playbackSpeed
-      });
-    }
-    return;
-  }
+  if (!matched) return;
 
-  if (!hasLoggedDebug) {
-    hasLoggedDebug = true;
-    console.debug("[TooMuchYouTube] Match found", {
-      channels,
-      title,
-      videoId,
-      playbackSpeed: settings.playbackSpeed
-    });
+  if (applyPlaybackRateOnce()) {
+    appliedForKey = matchKey;
   }
-
-  applyPlaybackRate();
 }
 
 function refreshSettings() {
@@ -173,6 +162,7 @@ function refreshSettings() {
     settings.titleMatches = data.titleMatches || "";
     settings.videoIdMatches = data.videoIdMatches || "";
     settings.playbackSpeed = data.playbackSpeed || "";
+    appliedForKey = null;
     evaluateAndApply();
   });
 }
@@ -190,6 +180,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 window.addEventListener("yt-navigate-finish", () => {
+  appliedForKey = null;
   scheduleEvaluate();
 });
 
