@@ -259,7 +259,7 @@
       document.body.classList.add("debug-mode");
       const bar = document.createElement("div");
       bar.className = "debug-bar";
-      bar.textContent = `DEBUG ${"169cddb"}.${"225839"}`;
+      bar.textContent = `DEBUG ${"58a0bc6"}.${"230743"}`;
       document.body.appendChild(bar);
     }, saveRules = function() {
       const normalized = normalizeRules(rules);
@@ -367,32 +367,30 @@
       dragIndex = Number(row.dataset.index);
       dragPointerId = pointerId;
       dragSourceRow = row;
-      dragOrigin = document.createElement("div");
-      dragOrigin.className = "row drag-origin";
-      dragOrigin.setAttribute("aria-hidden", "true");
-      dragPlaceholder = document.createElement("div");
-      dragPlaceholder.className = "row drag-placeholder";
+      dragPlaceholder = dragSourceRow.cloneNode(true);
+      dragPlaceholder.classList.add("drag-placeholder");
+      dragPlaceholder.removeAttribute("data-index");
       dragPlaceholder.setAttribute("aria-hidden", "true");
       dragSourceRow.style.display = "none";
-      rulesBody.insertBefore(dragOrigin, dragSourceRow);
       rulesBody.insertBefore(dragPlaceholder, dragSourceRow);
       document.body.classList.add("no-select");
     }, updatePlaceholder = function(clientX, clientY) {
       if (!dragPlaceholder) return;
-      const target = document.elementFromPoint(clientX, clientY);
-      if (!(target instanceof HTMLElement)) return;
-      const row = target.closest(".row");
-      if (!row || row === dragPlaceholder || row === dragOrigin) {
+      const rows = Array.from(rulesBody.querySelectorAll(".row")).filter(
+        (row) => row !== dragPlaceholder && row !== dragSourceRow
+      );
+      if (rows.length === 0) {
         rulesBody.appendChild(dragPlaceholder);
         return;
       }
-      if (row === dragSourceRow) return;
-      const rect = row.getBoundingClientRect();
-      const after = clientY > rect.top + rect.height / 2;
-      if (after) {
-        row.insertAdjacentElement("afterend", dragPlaceholder);
+      const targetRow = rows.find((row) => {
+        const rect = row.getBoundingClientRect();
+        return clientY < rect.top + rect.height / 2;
+      });
+      if (targetRow) {
+        targetRow.insertAdjacentElement("beforebegin", dragPlaceholder);
       } else {
-        row.insertAdjacentElement("beforebegin", dragPlaceholder);
+        rows[rows.length - 1].insertAdjacentElement("afterend", dragPlaceholder);
       }
     }, finalizeDrag = function() {
       if (dragIndex === null) return;
@@ -401,7 +399,7 @@
         let toIndex = 0;
         for (const child of ordered) {
           if (child === dragPlaceholder) break;
-          if (child.classList.contains("row") && child !== dragSourceRow && child !== dragOrigin && child !== dragPlaceholder) {
+          if (child.classList.contains("row") && child !== dragSourceRow && child !== dragPlaceholder) {
             toIndex += 1;
           }
         }
@@ -411,9 +409,6 @@
       }
       cleanupDrag();
     }, cleanupDrag = function() {
-      if (dragOrigin && dragOrigin.parentElement) {
-        dragOrigin.parentElement.removeChild(dragOrigin);
-      }
       if (dragPlaceholder && dragPlaceholder.parentElement) {
         dragPlaceholder.parentElement.removeChild(dragPlaceholder);
       }
@@ -421,7 +416,6 @@
         dragSourceRow.style.display = "";
       }
       dragIndex = null;
-      dragOrigin = null;
       dragPlaceholder = null;
       dragSourceRow = null;
       dragPointerId = null;
@@ -438,7 +432,6 @@
     let rules = [];
     let dragIndex = null;
     let dragPlaceholder = null;
-    let dragOrigin = null;
     let dragSourceRow = null;
     let dragPointerId = null;
     let saveTimer = null;

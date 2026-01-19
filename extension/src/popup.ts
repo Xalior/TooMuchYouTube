@@ -53,7 +53,6 @@ if (
   let rules: Rule[] = [];
   let dragIndex: number | null = null;
   let dragPlaceholder: HTMLDivElement | null = null;
-  let dragOrigin: HTMLDivElement | null = null;
   let dragSourceRow: HTMLDivElement | null = null;
   let dragPointerId: number | null = null;
   let saveTimer: number | null = null;
@@ -310,35 +309,34 @@ if (
     dragIndex = Number(row.dataset.index);
     dragPointerId = pointerId;
     dragSourceRow = row;
-    dragOrigin = document.createElement('div');
-    dragOrigin.className = 'row drag-origin';
-    dragOrigin.setAttribute('aria-hidden', 'true');
-    dragPlaceholder = document.createElement('div');
-    dragPlaceholder.className = 'row drag-placeholder';
+    dragPlaceholder = dragSourceRow.cloneNode(true) as HTMLDivElement;
+    dragPlaceholder.classList.add('drag-placeholder');
+    dragPlaceholder.removeAttribute('data-index');
     dragPlaceholder.setAttribute('aria-hidden', 'true');
 
     dragSourceRow.style.display = 'none';
-    rulesBody.insertBefore(dragOrigin, dragSourceRow);
     rulesBody.insertBefore(dragPlaceholder, dragSourceRow);
     document.body.classList.add('no-select');
   }
 
   function updatePlaceholder(clientX: number, clientY: number) {
     if (!dragPlaceholder) return;
-    const target = document.elementFromPoint(clientX, clientY);
-    if (!(target instanceof HTMLElement)) return;
-    const row = target.closest('.row');
-    if (!row || row === dragPlaceholder || row === dragOrigin) {
+    const rows = Array.from(rulesBody.querySelectorAll('.row')).filter(
+      (row) => row !== dragPlaceholder && row !== dragSourceRow
+    ) as HTMLElement[];
+    if (rows.length === 0) {
       rulesBody.appendChild(dragPlaceholder);
       return;
     }
-    if (row === dragSourceRow) return;
-    const rect = row.getBoundingClientRect();
-    const after = clientY > rect.top + rect.height / 2;
-    if (after) {
-      row.insertAdjacentElement('afterend', dragPlaceholder);
+
+    const targetRow = rows.find((row) => {
+      const rect = row.getBoundingClientRect();
+      return clientY < rect.top + rect.height / 2;
+    });
+    if (targetRow) {
+      targetRow.insertAdjacentElement('beforebegin', dragPlaceholder);
     } else {
-      row.insertAdjacentElement('beforebegin', dragPlaceholder);
+      rows[rows.length - 1].insertAdjacentElement('afterend', dragPlaceholder);
     }
   }
 
@@ -352,7 +350,6 @@ if (
         if (
           child.classList.contains('row') &&
           child !== dragSourceRow &&
-          child !== dragOrigin &&
           child !== dragPlaceholder
         ) {
           toIndex += 1;
@@ -366,9 +363,6 @@ if (
   }
 
   function cleanupDrag() {
-    if (dragOrigin && dragOrigin.parentElement) {
-      dragOrigin.parentElement.removeChild(dragOrigin);
-    }
     if (dragPlaceholder && dragPlaceholder.parentElement) {
       dragPlaceholder.parentElement.removeChild(dragPlaceholder);
     }
@@ -376,7 +370,6 @@ if (
       dragSourceRow.style.display = '';
     }
     dragIndex = null;
-    dragOrigin = null;
     dragPlaceholder = null;
     dragSourceRow = null;
     dragPointerId = null;

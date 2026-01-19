@@ -195,20 +195,12 @@ h2 {
   border-radius: 6px;
 }
 
-.row.drag-origin,
 .row.drag-placeholder {
-  height: 32px;
   border-radius: 8px;
-}
-
-.row.drag-origin {
-  background: #f6d63b;
-  border: 2px solid #d6b92f;
-}
-
-.row.drag-placeholder {
-  background: #2f8a4a;
+  background: rgba(47, 138, 74, 0.18);
   border: 2px dashed #1f6a36;
+  color: #2a7a43;
+  opacity: 0.7;
 }
 
 .add-row {
