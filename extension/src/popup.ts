@@ -9,10 +9,18 @@ type Rule = {
   speed: string;
 };
 
+type QuickAddData = {
+  videoId: string;
+  channelCandidates: string[];
+  title: string;
+};
+
 const rulesBody = document.getElementById('rulesBody') as HTMLDivElement | null;
 const status = document.getElementById('status') as HTMLSpanElement | null;
 const saveButton = document.getElementById('save') as HTMLButtonElement | null;
 const addButton = document.getElementById('addRule') as HTMLButtonElement | null;
+const quickAddChannel = document.getElementById('quickAddChannel') as HTMLButtonElement | null;
+const quickAddVideo = document.getElementById('quickAddVideo') as HTMLButtonElement | null;
 const newType = document.getElementById('newType') as HTMLSelectElement | null;
 const newValue = document.getElementById('newValue') as HTMLInputElement | null;
 const newSpeed = document.getElementById('newSpeed') as HTMLInputElement | null;
@@ -24,6 +32,8 @@ if (
   !status ||
   !saveButton ||
   !addButton ||
+  !quickAddChannel ||
+  !quickAddVideo ||
   !newType ||
   !newValue ||
   !newSpeed ||
@@ -43,7 +53,6 @@ if (
   };
 
   let rules: Rule[] = [];
-
   function isYouTubeUrl(url: string) {
     if (!url) return false;
     try {
@@ -52,6 +61,68 @@ if (
     } catch (err) {
       return false;
     }
+  }
+
+  function getVideoIdFromUrl(url: string) {
+    if (!url) return '';
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname === 'youtu.be') {
+        return parsed.pathname.split('/')[1]?.split(/[?&#/]/)[0] || '';
+      }
+      const v = parsed.searchParams.get('v');
+      if (v) return v;
+      if (parsed.pathname.startsWith('/shorts/')) {
+        return parsed.pathname.split('/shorts/')[1].split(/[?&#/]/)[0] || '';
+      }
+      return '';
+    } catch (err) {
+      return '';
+    }
+  }
+
+  function pickChannelCandidate(candidates: string[]) {
+    const cleaned = candidates.map((value) => value.trim()).filter(Boolean);
+    const handle = cleaned.find((value) => value.startsWith('@'));
+    if (handle) return handle;
+    const channelId = cleaned.find((value) => /^UC[\w-]{10,}$/.test(value));
+    if (channelId) return channelId;
+    return cleaned[0] || '';
+  }
+
+  function getActiveTab() {
+    return new Promise<chrome.tabs.Tab | null>((resolve) => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        resolve(tabs && tabs[0] ? tabs[0] : null);
+      });
+    });
+  }
+
+  function requestQuickAddData(tabId: number) {
+    return new Promise<QuickAddData | null>((resolve) => {
+      chrome.tabs.sendMessage(tabId, { type: 'getQuickAddData' }, (response) => {
+        if (chrome.runtime.lastError) {
+          resolve(null);
+          return;
+        }
+        resolve((response as QuickAddData) || null);
+      });
+    });
+  }
+
+  async function refreshQuickAddState() {
+    const tab = await getActiveTab();
+    if (!tab || !isYouTubeUrl(tab.url || tab.pendingUrl || '')) {
+      quickAddChannel.disabled = true;
+      quickAddVideo.disabled = true;
+      return;
+    }
+
+    const data = tab.id ? await requestQuickAddData(tab.id) : null;
+    const videoId = data?.videoId || getVideoIdFromUrl(tab.url || tab.pendingUrl || '');
+    const channel = pickChannelCandidate(data?.channelCandidates || []);
+    quickAddVideo.disabled = !videoId;
+    quickAddChannel.disabled = !channel;
   }
 
   function setEditorVisible(isVisible: boolean) {
@@ -247,6 +318,44 @@ if (
     renderRules();
   });
 
+  quickAddChannel.addEventListener('click', async () => {
+    const tab = await getActiveTab();
+    const tabUrl = tab?.url || tab?.pendingUrl || '';
+    if (!tab || !isYouTubeUrl(tabUrl)) {
+      showStatus('Open a YouTube tab');
+      return;
+    }
+    const data = tab.id ? await requestQuickAddData(tab.id) : null;
+    const channel = pickChannelCandidate(data?.channelCandidates || []);
+    if (!channel) {
+      showStatus('Channel not found');
+      return;
+    }
+    newType.value = 'channel';
+    newValue.value = channel;
+    newSpeed.focus();
+    newSpeed.select();
+  });
+
+  quickAddVideo.addEventListener('click', async () => {
+    const tab = await getActiveTab();
+    const tabUrl = tab?.url || tab?.pendingUrl || '';
+    if (!tab || !isYouTubeUrl(tabUrl)) {
+      showStatus('Open a YouTube tab');
+      return;
+    }
+    const data = tab.id ? await requestQuickAddData(tab.id) : null;
+    const videoId = data?.videoId || getVideoIdFromUrl(tabUrl);
+    if (!videoId) {
+      showStatus('Video ID not found');
+      return;
+    }
+    newType.value = 'videoId';
+    newValue.value = videoId;
+    newSpeed.focus();
+    newSpeed.select();
+  });
+
   saveButton.addEventListener('click', () => {
     const normalized = normalizeRules(rules);
     chrome.storage.sync.set({ rules: normalized }, () => {
@@ -260,7 +369,9 @@ if (
     rules = data.rules || [];
     renderRules();
     refreshActiveTabState();
+    refreshQuickAddState();
   });
 
   refreshActiveTabState();
+  refreshQuickAddState();
 }

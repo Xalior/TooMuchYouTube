@@ -161,6 +161,19 @@ h2 {
   align-items: center;
 }
 
+.quick-add {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.quick-btn {
+  padding: 4px 6px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 .add-row select,
 .add-row input {
   border: 1px solid #c7c2b5;

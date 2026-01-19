@@ -88,6 +88,15 @@ function getChannelCandidates() {
   return Array.from(candidates).filter(Boolean);
 }
 
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (!message || message.type !== 'getQuickAddData') return;
+  sendResponse({
+    videoId: getVideoIdFromUrl(),
+    channelCandidates: getChannelCandidates(),
+    title: getTitle()
+  });
+});
+
 function matchesRule(rule: Rule, { channels, title, videoId }: MatchContext) {
   if (!rule || !rule.value) return false;
   const ruleValue = normalize(rule.value);
