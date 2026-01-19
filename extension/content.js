@@ -83,9 +83,121 @@ function matchesRule(rule, { channels, title, videoId }) {
 }
 
 let appliedForKey = null;
+let appliedForVideo = null;
+let manualOverrideForVideo = null;
+const rateChangeListeners = new WeakSet();
+let lastProgrammaticRateSet = 0;
 
 function getMatchKey() {
   return getVideoIdFromUrl() || window.location.href;
+}
+
+const PAGE_SYNC_CHANNEL = "TMY_PLAYBACK_RATE_SYNC";
+
+function setPlaybackRateInPage(playbackSpeed) {
+  window.postMessage(
+    { channel: PAGE_SYNC_CHANNEL, type: "setPlaybackRate", rate: playbackSpeed },
+    "*"
+  );
+}
+
+function getPlayerApis() {
+  const apis = [];
+  const moviePlayer = document.getElementById("movie_player");
+  if (moviePlayer && typeof moviePlayer.setPlaybackRate === "function") {
+    apis.push(moviePlayer);
+  }
+
+  const ytdPlayer = document.querySelector("ytd-player");
+  if (ytdPlayer) {
+    if (typeof ytdPlayer.getPlayer === "function") {
+      const inner = ytdPlayer.getPlayer();
+      if (inner && typeof inner.setPlaybackRate === "function") {
+        apis.push(inner);
+      }
+    }
+    const legacy = ytdPlayer.player_;
+    if (legacy && typeof legacy.setPlaybackRate === "function") {
+      apis.push(legacy);
+    }
+  }
+
+  return apis;
+}
+
+function setVideoPlaybackRate(video, playbackSpeed) {
+  if (video.playbackRate === playbackSpeed) return;
+  lastProgrammaticRateSet = Date.now();
+  video.playbackRate = playbackSpeed;
+}
+
+function registerRateChangeListener(video, targetRate) {
+  if (rateChangeListeners.has(video)) return;
+  rateChangeListeners.add(video);
+
+  video.addEventListener("ratechange", () => {
+    if (!video.isConnected) return;
+    const currentRate = video.playbackRate;
+    if (currentRate === targetRate) return;
+    if (Date.now() - lastProgrammaticRateSet < 400) return;
+    manualOverrideForVideo = video;
+    if (syncIntervalId) {
+      window.clearInterval(syncIntervalId);
+      syncIntervalId = null;
+    }
+  });
+}
+
+let syncIntervalId = null;
+let syncToken = 0;
+
+function syncPlaybackRateWithPlayer(playbackSpeed) {
+  const maxAttempts = 30;
+  const retryDelayMs = 350;
+  const token = (syncToken += 1);
+  let attempts = 0;
+
+  if (syncIntervalId) {
+    window.clearInterval(syncIntervalId);
+    syncIntervalId = null;
+  }
+
+  const trySync = () => {
+    if (token !== syncToken) return;
+    attempts += 1;
+    const video = document.querySelector("video");
+    const apis = getPlayerApis();
+    if (manualOverrideForVideo && manualOverrideForVideo === video) {
+      if (syncIntervalId) {
+        window.clearInterval(syncIntervalId);
+        syncIntervalId = null;
+      }
+      return;
+    }
+
+    setPlaybackRateInPage(playbackSpeed);
+
+    apis.forEach((api) => {
+      if (typeof api.setPlaybackRate !== "function") return;
+      try {
+        api.setPlaybackRate(playbackSpeed);
+      } catch (err) {
+        // Ignore player API failures; fallback to direct video updates.
+      }
+    });
+
+    if (video && video.playbackRate !== playbackSpeed) {
+      setVideoPlaybackRate(video, playbackSpeed);
+    }
+
+    if (attempts >= maxAttempts) {
+      window.clearInterval(syncIntervalId);
+      syncIntervalId = null;
+    }
+  };
+
+  trySync();
+  syncIntervalId = window.setInterval(trySync, retryDelayMs);
 }
 
 function applyPlaybackRateOnce(speed) {
@@ -94,22 +206,34 @@ function applyPlaybackRateOnce(speed) {
   const playbackSpeed = Number(speed);
   if (!Number.isFinite(playbackSpeed) || playbackSpeed <= 0) return false;
 
-  const videos = Array.from(document.querySelectorAll("video"));
-  if (videos.length === 0) return false;
-
   let applied = false;
+
+  const videos = Array.from(document.querySelectorAll("video"));
+  if (videos.length === 0) return applied;
+
   videos.forEach((video) => {
+    registerRateChangeListener(video, playbackSpeed);
     if (video.readyState >= 1) {
-      video.playbackRate = playbackSpeed;
+      setVideoPlaybackRate(video, playbackSpeed);
       applied = true;
       return;
     }
     const onMetadata = () => {
-      video.playbackRate = playbackSpeed;
+      setVideoPlaybackRate(video, playbackSpeed);
     };
     video.addEventListener("loadedmetadata", onMetadata, { once: true });
+    video.addEventListener(
+      "playing",
+      () => {
+        syncPlaybackRateWithPlayer(playbackSpeed);
+      },
+      { once: true }
+    );
     applied = true;
   });
+
+  syncPlaybackRateWithPlayer(playbackSpeed);
+  appliedForVideo = videos[0] || null;
 
   return applied;
 }
@@ -128,7 +252,20 @@ function evaluateAndApply() {
   if (!window.location.hostname.includes("youtube.com")) return;
 
   const matchKey = getMatchKey();
-  if (appliedForKey === matchKey) return;
+  if (appliedForKey === matchKey) {
+    const currentVideo = document.querySelector("video");
+    if (
+      appliedForVideo &&
+      currentVideo &&
+      appliedForVideo === currentVideo &&
+      currentVideo.isConnected
+    ) {
+      return;
+    }
+    if (currentVideo && appliedForVideo !== currentVideo) {
+      manualOverrideForVideo = null;
+    }
+  }
 
   const channels = getChannelCandidates();
   const title = getTitle();
@@ -147,6 +284,8 @@ function refreshSettings() {
   chrome.storage.sync.get(settings, (data) => {
     settings.rules = data.rules || [];
     appliedForKey = null;
+    appliedForVideo = null;
+    manualOverrideForVideo = null;
     evaluateAndApply();
   });
 }
@@ -162,6 +301,8 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 window.addEventListener("yt-navigate-finish", () => {
   appliedForKey = null;
+  appliedForVideo = null;
+  manualOverrideForVideo = null;
   scheduleEvaluate();
 });
 
