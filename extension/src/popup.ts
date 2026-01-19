@@ -133,6 +133,7 @@ if (
   function setEditorVisible(isVisible: boolean) {
     editor.classList.toggle('hidden', !isVisible);
     notYoutube.classList.toggle('hidden', isVisible);
+    document.body.classList.toggle('not-youtube', !isVisible);
   }
 
   function refreshActiveTabState() {

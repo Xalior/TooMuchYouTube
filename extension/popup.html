@@ -7,55 +7,59 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <main class="wrap" id="editor">
-      <header class="header">
-        <div>
-          <h1>TooMuchYouTube</h1>
-          <p class="hint">First matching rule wins. Reorder to control priority.</p>
-        </div>
-      </header>
-
-      <section class="panel rules-panel">
-        <h2>Rules</h2>
-        <div class="table">
-          <div class="row header">
-            <span>Order</span>
-            <span>Match type</span>
-            <span>Match value</span>
-            <span>Speed</span>
-            <span>Actions</span>
+    <div class="content">
+      <main class="wrap" id="editor">
+        <header class="header">
+          <div>
+            <h1>TooMuchYouTube</h1>
+            <p class="hint">First matching rule wins. Reorder to control priority.</p>
           </div>
-          <div id="rulesBody" class="body"></div>
+        </header>
+
+        <section class="panel rules-panel">
+          <h2>Rules</h2>
+          <div class="table">
+            <div class="row header">
+              <span>Order</span>
+              <span>Match type</span>
+              <span>Match value</span>
+              <span>Speed</span>
+              <span>Actions</span>
+            </div>
+            <div id="rulesBody" class="body"></div>
+          </div>
+        </section>
+
+        <div class="actions">
+          <span id="status" class="status" role="status"></span>
         </div>
-      </section>
 
-      <div class="actions">
-        <span id="status" class="status" role="status"></span>
+        <p class="hint small">If nothing matches, playback speed stays unchanged.</p>
+      </main>
+      <div id="notYoutube" class="panel empty-state hidden" role="status">
+        <h2>Open YouTube</h2>
+        <p class="hint">Switch to a YouTube tab to edit playback rules.</p>
       </div>
-
-      <p class="hint small">If nothing matches, playback speed stays unchanged.</p>
-    </main>
+    </div>
     <footer class="bottom-bar">
-      <div class="quick-add">
-        <button id="quickAddChannel" type="button" class="quick-btn">Add This Channel</button>
-        <button id="quickAddVideo" type="button" class="quick-btn">Add This Video</button>
-      </div>
-      <div class="add-row">
-        <select id="newType">
-          <option value="channel">Channel name / handle</option>
-          <option value="videoId">Video ID</option>
-          <option value="title">Title contains</option>
-        </select>
-        <input id="newValue" type="text" placeholder="This Week In Tech" />
-        <input id="newSpeed" type="number" min="0.25" max="4" step="0.25" placeholder="2.0" />
-        <button id="addRule" type="button">Add</button>
+      <div class="add-controls">
+        <div class="quick-add">
+          <button id="quickAddChannel" type="button" class="quick-btn">Add This Channel</button>
+          <button id="quickAddVideo" type="button" class="quick-btn">Add This Video</button>
+        </div>
+        <div class="add-row">
+          <select id="newType">
+            <option value="channel">Channel name / handle</option>
+            <option value="videoId">Video ID</option>
+            <option value="title">Title contains</option>
+          </select>
+          <input id="newValue" type="text" placeholder="This Week In Tech" />
+          <input id="newSpeed" type="number" min="0.25" max="4" step="0.25" placeholder="2.0" />
+          <button id="addRule" type="button">Add</button>
+        </div>
       </div>
       <span id="debugInfo" class="debug-info hidden"></span>
     </footer>
-    <div id="notYoutube" class="panel empty-state hidden" role="status">
-      <h2>Open YouTube</h2>
-      <p class="hint">Switch to a YouTube tab to edit playback rules.</p>
-    </div>
     <script src="dist/popup.js"></script>
   </body>
 </html>

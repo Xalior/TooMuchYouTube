@@ -242,6 +242,7 @@
     }, setEditorVisible = function(isVisible) {
       editor.classList.toggle("hidden", !isVisible);
       notYoutube.classList.toggle("hidden", isVisible);
+      document.body.classList.toggle("not-youtube", !isVisible);
     }, refreshActiveTabState = function() {
       if (!chrome.tabs?.query) return;
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -257,7 +258,7 @@
       }, 1500);
     }, renderDebugBar = function() {
       if (false) return;
-      debugInfo.textContent = `DEBUG ${"1ffca61"}.${"232343"}`;
+      debugInfo.textContent = `DEBUG ${"d19223c"}.${"233614"}`;
       debugInfo.classList.remove("hidden");
     }, saveRules = function() {
       const normalized = normalizeRules(rules);

@@ -46,6 +46,14 @@ h2 {
   color: #5f5b52;
 }
 
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .wrap {
   display: flex;
   flex-direction: column;
@@ -299,6 +307,16 @@ button:hover {
   box-sizing: border-box;
 }
 
+body.not-youtube .bottom-bar {
+  height: 26px;
+  padding: 4px 12px;
+  justify-content: center;
+}
+
+body.not-youtube .bottom-bar .add-controls {
+  display: none;
+}
+
 .bottom-bar .add-row {
   grid-template-columns: 130px 1fr 60px 54px;
   gap: 6px;
@@ -322,3 +340,10 @@ button:hover {
   color: #5f5b52;
   text-align: right;
 }
+.add-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bottom-bar {
