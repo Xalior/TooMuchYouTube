@@ -1,6 +1,7 @@
 :root {
   color-scheme: light;
   --bottom-bar-height: 96px;
+  --toast-height: 26px;
 }
 
 html,
@@ -299,8 +300,38 @@ button:hover {
 }
 
 .status {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--toast-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 11px;
-  color: #2d6a3c;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: #1d1c1a;
+  color: #f7f6f2;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.status.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body:not(.is-debug) .status {
+  bottom: 74px;
+}
+
+body.not-youtube:not(.is-debug) .status {
+  bottom: 26px;
+}
 }
 
 .bottom-bar {
@@ -313,6 +344,10 @@ button:hover {
   height: var(--bottom-bar-height);
   box-shadow: 0 -6px 16px rgba(29, 28, 26, 0.06);
   box-sizing: border-box;
+}
+
+.bottom-bar.no-debug {
+  height: 74px;
 }
 
 body.not-youtube .bottom-bar {

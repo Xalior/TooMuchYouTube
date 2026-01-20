@@ -58,6 +58,7 @@ if (
   let dragSourceRow: HTMLDivElement | null = null;
   let dragPointerId: number | null = null;
   let saveTimer: number | null = null;
+  let statusTimer: number | null = null;
   function isYouTubeUrl(url: string) {
     if (!url) return false;
     try {
@@ -147,16 +148,27 @@ if (
 
   function showStatus(message: string) {
     status.textContent = message;
+    status.classList.toggle('show', Boolean(message));
     if (!message) return;
-    setTimeout(() => {
+    if (statusTimer) {
+      window.clearTimeout(statusTimer);
+    }
+    statusTimer = window.setTimeout(() => {
       status.textContent = '';
+      status.classList.remove('show');
     }, 1500);
   }
 
   function renderDebugBar() {
-    if (__BUILD_MODE__ !== 'debug') return;
+    const isDebug = __BUILD_MODE__ === 'debug';
+    document.body.classList.toggle('is-debug', isDebug);
+    debugInfo.classList.toggle('hidden', !isDebug);
+    const bottomBar = document.querySelector('.bottom-bar');
+    if (bottomBar instanceof HTMLElement) {
+      bottomBar.classList.toggle('no-debug', !isDebug);
+    }
+    if (!isDebug) return;
     debugInfo.textContent = `DEBUG ${__BUILD_GIT_HASH__}.${__BUILD_TIME__}`;
-    debugInfo.classList.remove('hidden');
   }
 
   function saveRules() {
