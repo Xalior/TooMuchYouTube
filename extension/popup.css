@@ -468,7 +468,9 @@ body.not-youtube:not(.is-debug) .status {
 body.not-youtube .bottom-bar {
   height: 26px;
   padding: 4px 12px;
-  justify-content: center;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
 }
 
 body.not-youtube .bottom-bar .add-controls {
@@ -519,6 +521,15 @@ body.not-youtube .bottom-bar .add-controls {
 
 body.not-youtube .not-youtube-bar {
   display: inline-flex;
+  order: 1;
+  width: auto;
+}
+
+body.not-youtube .debug-info {
+  display: inline-flex;
+  width: auto;
+  margin-left: auto;
+  order: 2;
 }
 
 .not-youtube-title {
