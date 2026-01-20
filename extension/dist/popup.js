@@ -246,6 +246,7 @@
         });
       });
     }, setEditorVisible = function(isVisible) {
+      lastEditorVisible = isVisible;
       editor.classList.toggle("hidden", !isVisible);
       notYoutube.classList.toggle("hidden", isVisible);
       document.body.classList.toggle("not-youtube", !isVisible);
@@ -256,6 +257,12 @@
       aboutClose.classList.toggle("hidden", !isOpen);
       aboutOpenBottom.classList.toggle("hidden", isOpen);
       aboutCloseBottom.classList.toggle("hidden", !isOpen);
+      if (isOpen) {
+        editor.classList.remove("hidden");
+        notYoutube.classList.add("hidden");
+      } else {
+        setEditorVisible(lastEditorVisible);
+      }
     }, refreshActiveTabState = function() {
       if (!chrome.tabs?.query) return;
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -288,7 +295,7 @@
         bottomBar.classList.toggle("no-debug", !isDebug);
       }
       if (!isDebug) return;
-      debugInfo.textContent = `DEBUG ${"2ca19d7"}.${"004913"}`;
+      debugInfo.textContent = `DEBUG ${"6c83b10"}.${"005447"}`;
     }, renderAboutInfo = function() {
       aboutBuildMode.textContent = "debug";
     }, saveRules = function(showToast) {
@@ -482,6 +489,7 @@
     let dragPointerId = null;
     let saveTimer = null;
     let statusTimer = null;
+    let lastEditorVisible = true;
     async function refreshQuickAddState() {
       const tab = await getActiveTab();
       if (!tab || !isYouTubeUrl(tab.url || tab.pendingUrl || "")) {

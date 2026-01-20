@@ -71,6 +71,7 @@ if (
   let dragPointerId: number | null = null;
   let saveTimer: number | null = null;
   let statusTimer: number | null = null;
+  let lastEditorVisible = true;
   function isYouTubeUrl(url: string) {
     if (!url) return false;
     try {
@@ -144,6 +145,7 @@ if (
   }
 
   function setEditorVisible(isVisible: boolean) {
+    lastEditorVisible = isVisible;
     editor.classList.toggle('hidden', !isVisible);
     notYoutube.classList.toggle('hidden', isVisible);
     document.body.classList.toggle('not-youtube', !isVisible);
@@ -156,6 +158,12 @@ if (
     aboutClose.classList.toggle('hidden', !isOpen);
     aboutOpenBottom.classList.toggle('hidden', isOpen);
     aboutCloseBottom.classList.toggle('hidden', !isOpen);
+    if (isOpen) {
+      editor.classList.remove('hidden');
+      notYoutube.classList.add('hidden');
+    } else {
+      setEditorVisible(lastEditorVisible);
+    }
   }
 
   function refreshActiveTabState() {
