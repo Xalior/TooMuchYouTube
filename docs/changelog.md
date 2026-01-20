@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 - Minted UI
+
+- New bottom bar editor layout with quick-add actions and auto-save.
+- Drag-and-drop rule reordering with auto-scroll on long lists.
+- Debug/prod build modes with build metadata and a fixed debug bar.
+- Status toast overlays with colored success/warn/error states.
+- UI polish: header icon, GitHub link, and improved non-YouTube empty state.
+
 ## 0.2.0
 
 - Add extension icon and README hero branding.

@@ -8,7 +8,7 @@
 
 Make YouTube play at the speed you want, automatically. Set rules by channel, title, or video ID and let the extension handle the rest. 🧃
 
-Version: 0.2.0 · Changelog: [docs/changelog.md](docs/changelog.md)
+Version: 0.3.0 · Changelog: [docs/changelog.md](docs/changelog.md)
 
 ## Why speed things up? 🤹
 
