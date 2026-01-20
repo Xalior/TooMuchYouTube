@@ -146,9 +146,14 @@ if (
     });
   }
 
-  function showStatus(message: string) {
+  function showStatus(message: string, tone: 'success' | 'error' | 'warning' = 'success') {
     status.textContent = message;
-    status.classList.toggle('show', Boolean(message));
+    status.classList.remove('success', 'error', 'warning');
+    if (message) {
+      status.classList.add('show', tone);
+    } else {
+      status.classList.remove('show');
+    }
     if (!message) return;
     if (statusTimer) {
       window.clearTimeout(statusTimer);
@@ -176,7 +181,7 @@ if (
     chrome.storage.sync.set({ rules: normalized }, () => {
       rules = normalized;
       renderRules();
-      showStatus('Saved');
+      showStatus('Saved', 'success');
     });
   }
 
@@ -433,7 +438,7 @@ if (
     const value = newValue.value.trim();
     const speed = newSpeed.value.trim();
     if (!value || !speed) {
-      showStatus('Add a match and speed');
+      showStatus('Add a match and speed', 'warning');
       return;
     }
 
@@ -457,13 +462,13 @@ if (
     const tab = await getActiveTab();
     const tabUrl = tab?.url || tab?.pendingUrl || '';
     if (!tab || !isYouTubeUrl(tabUrl)) {
-      showStatus('Open a YouTube tab');
+      showStatus('Open a YouTube tab', 'warning');
       return;
     }
     const data = tab.id ? await requestQuickAddData(tab.id) : null;
     const channel = pickChannelCandidate(data?.channelCandidates || []);
     if (!channel) {
-      showStatus('Channel not found');
+      showStatus('Channel not found', 'error');
       return;
     }
     newType.value = 'channel';
@@ -476,13 +481,13 @@ if (
     const tab = await getActiveTab();
     const tabUrl = tab?.url || tab?.pendingUrl || '';
     if (!tab || !isYouTubeUrl(tabUrl)) {
-      showStatus('Open a YouTube tab');
+      showStatus('Open a YouTube tab', 'warning');
       return;
     }
     const data = tab.id ? await requestQuickAddData(tab.id) : null;
     const videoId = data?.videoId || getVideoIdFromUrl(tabUrl);
     if (!videoId) {
-      showStatus('Video ID not found');
+      showStatus('Video ID not found', 'error');
       return;
     }
     newType.value = 'videoId';
