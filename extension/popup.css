@@ -174,10 +174,11 @@ h2 {
 
 .about-panel {
   display: none;
+  flex: 1;
+  min-height: 0;
 }
 
-body.about-open .wrap,
-body.about-open #notYoutube {
+body.about-open .rules-panel {
   display: none;
 }
 
