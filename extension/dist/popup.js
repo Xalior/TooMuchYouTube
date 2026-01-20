@@ -275,21 +275,23 @@
         bottomBar.classList.toggle("no-debug", !isDebug);
       }
       if (!isDebug) return;
-      debugInfo.textContent = `DEBUG ${"440fa3f"}.${"002008"}`;
-    }, saveRules = function() {
+      debugInfo.textContent = `DEBUG ${"393c5db"}.${"002252"}`;
+    }, saveRules = function(showToast) {
       const normalized = normalizeRules(rules);
       chrome.storage.sync.set({ rules: normalized }, () => {
         rules = normalized;
         renderRules();
-        showStatus("Saved", "success");
+        if (showToast) {
+          showStatus("Saved", "success");
+        }
       });
-    }, scheduleSave = function() {
+    }, scheduleSave = function(showToast = true) {
       if (saveTimer) {
         window.clearTimeout(saveTimer);
       }
       saveTimer = window.setTimeout(() => {
         saveTimer = null;
-        saveRules();
+        saveRules(showToast);
       }, 500);
     }, renderRules = function() {
       rulesBody.innerHTML = "";
@@ -367,7 +369,8 @@
     }, deleteRule = function(index) {
       rules = rules.filter((_, idx) => idx !== index);
       renderRules();
-      scheduleSave();
+      scheduleSave(false);
+      showStatus("Deleted", "error");
     }, updateRule = function(index, field, value) {
       rules = rules.map((rule, idx) => {
         if (idx !== index) return rule;

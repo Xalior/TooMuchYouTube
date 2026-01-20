@@ -3,6 +3,7 @@
 <div align="center">
   <img src="docs/icon.png" width="420" alt="TooMuchYouTube icon">
   <p><em>Speed rules for the impatient.</em></p>
+  <p><a href="https://github.com/Xalior/TooMuchYouTube">github.com/Xalior/TooMuchYouTube</a></p>
 </div>
 
 Make YouTube play at the speed you want, automatically. Set rules by channel, title, or video ID and let the extension handle the rest. 🧃

@@ -85,15 +85,43 @@ h2 {
 .header {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
   gap: 6px;
 }
 
 .logo {
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   border-radius: 6px;
   flex-shrink: 0;
+}
+
+.github-link {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1d1c1a;
+  background: #fff;
+  border: 1px solid #d8d1c3;
+  border-radius: 8px;
+}
+
+.github-link:hover {
+  background: #1d1c1a;
+  color: #f7f6f2;
+}
+
+.github-link svg {
+  width: 16px;
+  height: 16px;
 }
 
 .panel {
