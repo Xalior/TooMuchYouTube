@@ -24,6 +24,10 @@ const newType = document.getElementById('newType') as HTMLSelectElement | null;
 const newValue = document.getElementById('newValue') as HTMLInputElement | null;
 const newSpeed = document.getElementById('newSpeed') as HTMLInputElement | null;
 const debugInfo = document.getElementById('debugInfo') as HTMLSpanElement | null;
+const aboutOpen = document.getElementById('aboutOpen') as HTMLButtonElement | null;
+const aboutClose = document.getElementById('aboutClose') as HTMLButtonElement | null;
+const aboutPanel = document.getElementById('aboutPanel') as HTMLDivElement | null;
+const aboutBuildMode = document.getElementById('aboutBuildMode') as HTMLSpanElement | null;
 const editor = document.getElementById('editor') as HTMLElement | null;
 const notYoutube = document.getElementById('notYoutube') as HTMLElement | null;
 
@@ -37,6 +41,10 @@ if (
   !newValue ||
   !newSpeed ||
   !debugInfo ||
+  !aboutOpen ||
+  !aboutClose ||
+  !aboutPanel ||
+  !aboutBuildMode ||
   !editor ||
   !notYoutube
 ) {
@@ -137,6 +145,13 @@ if (
     document.body.classList.toggle('not-youtube', !isVisible);
   }
 
+  function setAboutOpen(isOpen: boolean) {
+    document.body.classList.toggle('about-open', isOpen);
+    aboutPanel.classList.toggle('hidden', !isOpen);
+    aboutOpen.classList.toggle('hidden', isOpen);
+    aboutClose.classList.toggle('hidden', !isOpen);
+  }
+
   function refreshActiveTabState() {
     if (!chrome.tabs?.query) return;
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -174,6 +189,10 @@ if (
     }
     if (!isDebug) return;
     debugInfo.textContent = `DEBUG ${__BUILD_GIT_HASH__}.${__BUILD_TIME__}`;
+  }
+
+  function renderAboutInfo() {
+    aboutBuildMode.textContent = __BUILD_MODE__;
   }
 
   function saveRules(showToast: boolean) {
@@ -477,6 +496,14 @@ if (
     scheduleSave();
   });
 
+  aboutOpen.addEventListener('click', () => {
+    setAboutOpen(true);
+  });
+
+  aboutClose.addEventListener('click', () => {
+    setAboutOpen(false);
+  });
+
   quickAddChannel.addEventListener('click', async () => {
     const tab = await getActiveTab();
     const tabUrl = tab?.url || tab?.pendingUrl || '';
@@ -521,6 +548,8 @@ if (
     refreshActiveTabState();
     refreshQuickAddState();
     renderDebugBar();
+    renderAboutInfo();
+    setAboutOpen(false);
   });
 
   refreshActiveTabState();
