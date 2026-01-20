@@ -283,6 +283,14 @@ button:hover {
   background: #33312e;
 }
 
+.btn-positive {
+  background: #1f6a36;
+}
+
+.btn-positive:hover {
+  background: #19552b;
+}
+
 .hint {
   margin: 0;
   font-size: 11px;
@@ -313,6 +321,18 @@ button:hover {
 .status.show {
   opacity: 1;
   transform: translateY(0);
+}
+
+.status.success {
+  background: #1f6a36;
+}
+
+.status.error {
+  background: #b22a2a;
+}
+
+.status.warning {
+  background: #a35a00;
 }
 
 body:not(.is-debug) .status {
