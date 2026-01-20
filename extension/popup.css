@@ -79,7 +79,7 @@ h2 {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .header {
@@ -190,6 +190,12 @@ body.about-open .about-panel {
 
 body.about-open .bottom-bar .add-controls {
   display: none;
+}
+
+body.about-open .bottom-bar {
+  height: 26px;
+  padding: 4px 12px;
+  justify-content: center;
 }
 
 .rules-panel {
