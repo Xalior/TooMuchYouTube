@@ -188,14 +188,12 @@
   var newSpeed = document.getElementById("newSpeed");
   var debugInfo = document.getElementById("debugInfo");
   var aboutOpen = document.getElementById("aboutOpen");
-  var aboutClose = document.getElementById("aboutClose");
   var aboutOpenBottom = document.getElementById("aboutOpenBottom");
-  var aboutCloseBottom = document.getElementById("aboutCloseBottom");
   var aboutPanel = document.getElementById("aboutPanel");
   var aboutBuildMode = document.getElementById("aboutBuildMode");
   var editor = document.getElementById("editor");
   var notYoutube = document.getElementById("notYoutube");
-  if (!rulesBody || !status || !addButton || !quickAddChannel || !quickAddVideo || !newType || !newValue || !newSpeed || !debugInfo || !aboutOpen || !aboutClose || !aboutOpenBottom || !aboutCloseBottom || !aboutPanel || !aboutBuildMode || !editor || !notYoutube) {
+  if (!rulesBody || !status || !addButton || !quickAddChannel || !quickAddVideo || !newType || !newValue || !newSpeed || !debugInfo || !aboutOpen || !aboutOpenBottom || !aboutPanel || !aboutBuildMode || !editor || !notYoutube) {
     console.warn("TooMuchYouTube popup: missing required elements.");
   } else {
     let isYouTubeUrl = function(url) {
@@ -253,10 +251,6 @@
     }, setAboutOpen = function(isOpen) {
       document.body.classList.toggle("about-open", isOpen);
       aboutPanel.classList.toggle("hidden", !isOpen);
-      aboutOpen.classList.toggle("hidden", isOpen);
-      aboutClose.classList.toggle("hidden", !isOpen);
-      aboutOpenBottom.classList.toggle("hidden", isOpen);
-      aboutCloseBottom.classList.toggle("hidden", !isOpen);
       if (isOpen) {
         editor.classList.remove("hidden");
         notYoutube.classList.add("hidden");
@@ -295,7 +289,7 @@
         bottomBar.classList.toggle("no-debug", !isDebug);
       }
       if (!isDebug) return;
-      debugInfo.textContent = `DEBUG ${"6c83b10"}.${"005447"}`;
+      debugInfo.textContent = `DEBUG ${"531be0a"}.${"233143"}`;
     }, renderAboutInfo = function() {
       aboutBuildMode.textContent = "debug";
     }, saveRules = function(showToast) {
@@ -570,16 +564,10 @@
       scheduleSave();
     });
     aboutOpen.addEventListener("click", () => {
-      setAboutOpen(true);
-    });
-    aboutClose.addEventListener("click", () => {
-      setAboutOpen(false);
+      setAboutOpen(!document.body.classList.contains("about-open"));
     });
     aboutOpenBottom.addEventListener("click", () => {
-      setAboutOpen(true);
-    });
-    aboutCloseBottom.addEventListener("click", () => {
-      setAboutOpen(false);
+      setAboutOpen(!document.body.classList.contains("about-open"));
     });
     quickAddChannel.addEventListener("click", async () => {
       const tab = await getActiveTab();

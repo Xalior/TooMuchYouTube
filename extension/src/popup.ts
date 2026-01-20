@@ -25,9 +25,7 @@ const newValue = document.getElementById('newValue') as HTMLInputElement | null;
 const newSpeed = document.getElementById('newSpeed') as HTMLInputElement | null;
 const debugInfo = document.getElementById('debugInfo') as HTMLSpanElement | null;
 const aboutOpen = document.getElementById('aboutOpen') as HTMLButtonElement | null;
-const aboutClose = document.getElementById('aboutClose') as HTMLButtonElement | null;
 const aboutOpenBottom = document.getElementById('aboutOpenBottom') as HTMLButtonElement | null;
-const aboutCloseBottom = document.getElementById('aboutCloseBottom') as HTMLButtonElement | null;
 const aboutPanel = document.getElementById('aboutPanel') as HTMLDivElement | null;
 const aboutBuildMode = document.getElementById('aboutBuildMode') as HTMLSpanElement | null;
 const editor = document.getElementById('editor') as HTMLElement | null;
@@ -44,9 +42,7 @@ if (
   !newSpeed ||
   !debugInfo ||
   !aboutOpen ||
-  !aboutClose ||
   !aboutOpenBottom ||
-  !aboutCloseBottom ||
   !aboutPanel ||
   !aboutBuildMode ||
   !editor ||
@@ -154,10 +150,6 @@ if (
   function setAboutOpen(isOpen: boolean) {
     document.body.classList.toggle('about-open', isOpen);
     aboutPanel.classList.toggle('hidden', !isOpen);
-    aboutOpen.classList.toggle('hidden', isOpen);
-    aboutClose.classList.toggle('hidden', !isOpen);
-    aboutOpenBottom.classList.toggle('hidden', isOpen);
-    aboutCloseBottom.classList.toggle('hidden', !isOpen);
     if (isOpen) {
       editor.classList.remove('hidden');
       notYoutube.classList.add('hidden');
@@ -511,19 +503,11 @@ if (
   });
 
   aboutOpen.addEventListener('click', () => {
-    setAboutOpen(true);
-  });
-
-  aboutClose.addEventListener('click', () => {
-    setAboutOpen(false);
+    setAboutOpen(!document.body.classList.contains('about-open'));
   });
 
   aboutOpenBottom.addEventListener('click', () => {
-    setAboutOpen(true);
-  });
-
-  aboutCloseBottom.addEventListener('click', () => {
-    setAboutOpen(false);
+    setAboutOpen(!document.body.classList.contains('about-open'));
   });
 
   quickAddChannel.addEventListener('click', async () => {

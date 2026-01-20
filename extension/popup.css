@@ -130,17 +130,14 @@ h2 {
 .icon-button svg {
   width: 16px;
   height: 16px;
+  display: block;
+  fill: currentColor;
 }
 
-.icon-button.small {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-}
 
-.icon-button.small svg {
-  width: 12px;
-  height: 12px;
+.not-youtube-bar .icon-button {
+  color: #1d1c1a;
+  background: #fff;
 }
 
 .github-link {
@@ -165,16 +162,6 @@ h2 {
   height: 16px;
 }
 
-.github-link.small {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-}
-
-.github-link.small svg {
-  width: 12px;
-  height: 12px;
-}
 
 .panel {
   background: #fffdf7;
@@ -197,16 +184,6 @@ body.about-open .about-panel {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-body.about-open .bottom-bar .add-controls {
-  display: none;
-}
-
-body.about-open .bottom-bar {
-  height: 26px;
-  padding: 4px 12px;
-  justify-content: center;
 }
 
 .rules-panel {
@@ -446,7 +423,7 @@ body:not(.is-debug) .status {
 }
 
 body.not-youtube:not(.is-debug) .status {
-  bottom: 26px;
+  bottom: 36px;
 }
 
 .bottom-bar {
@@ -466,7 +443,7 @@ body.not-youtube:not(.is-debug) .status {
 }
 
 body.not-youtube .bottom-bar {
-  height: 26px;
+  height: 36px;
   padding: 4px 12px;
   flex-direction: row;
   align-items: center;
@@ -514,15 +491,12 @@ body.not-youtube .bottom-bar .add-controls {
 .not-youtube-bar {
   display: none;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
-  width: 100%;
 }
 
 body.not-youtube .not-youtube-bar {
   display: inline-flex;
   order: 1;
-  width: auto;
 }
 
 body.not-youtube .debug-info {
@@ -537,6 +511,12 @@ body.not-youtube .debug-info {
   font-weight: 600;
   color: #5f5b52;
   letter-spacing: 0.02em;
+}
+
+.not-youtube-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .add-controls {
   display: flex;

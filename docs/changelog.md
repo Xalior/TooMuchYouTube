@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 - The underside the mint leaf
+
+- Match the non-YouTube footer icons to the topbar sizing and spacing.
+- Keep the bottom bar steady while the About panel toggles.
+
 ## 0.3.0 - Minted UI
 
 - New bottom bar editor layout with quick-add actions and auto-save.

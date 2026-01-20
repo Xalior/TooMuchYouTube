@@ -8,7 +8,7 @@
 
 Make YouTube play at the speed you want, automatically. Set rules by channel, title, or video ID and let the extension handle the rest. 🧃
 
-Version: 0.3.0 · Changelog: [docs/changelog.md](docs/changelog.md)
+Version: 0.3.1 · Changelog: [docs/changelog.md](docs/changelog.md)
 
 ## Why speed things up? 🤹
 
@@ -38,7 +38,7 @@ Version: 0.3.0 · Changelog: [docs/changelog.md](docs/changelog.md)
 
 More on how the extension is wired is in `docs/architecture.md`.
 
-Note: Shorts support is still mostly untested — a measured combination of a principled stand against vertical serotonin doom-scrolling and a deep understanding that no-one watches those things really, anyways... I’ll get to it, when Shorts get worth watching.  But, as it is, Shorts keep happening to us, not the other way around... 🙄📱 
+Note: Shorts support is still mostly untested... this a measured combination of (1) a principled stand against vertical serotonin powered doom-scrolling, and (2) a deep understanding that no-one watches those things really, anyways... I’ll get to it, when Shorts get worth watching.  But, as it is, Shorts keep happening to us, not the other way around... 🙄📱 
 
 ## License
 
