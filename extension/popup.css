@@ -124,6 +124,17 @@ h2 {
   height: 16px;
 }
 
+.github-link.small {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+}
+
+.github-link.small svg {
+  width: 12px;
+  height: 12px;
+}
+
 .panel {
   background: #fffdf7;
   border: 1px solid #d8d1c3;
@@ -397,6 +408,14 @@ body.not-youtube .bottom-bar .add-controls {
   display: none;
 }
 
+body.not-youtube .bottom-bar .debug-info {
+  display: none;
+}
+
+body.not-youtube .not-youtube-bar {
+  display: inline-flex;
+}
+
 .bottom-bar .add-row {
   grid-template-columns: 130px 1fr 60px 54px;
   gap: 6px;
@@ -429,6 +448,21 @@ body.not-youtube .bottom-bar .add-controls {
   margin-top: 0;
   padding-bottom: 0;
   line-height: 1;
+}
+
+.not-youtube-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.not-youtube-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #5f5b52;
+  letter-spacing: 0.02em;
 }
 .add-controls {
   display: flex;
