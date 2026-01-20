@@ -18,6 +18,7 @@ Version: 0.2.0 · Changelog: [docs/changelog.md](docs/changelog.md)
 - Product reviews with long cinematic pans of the box 📦
 - Live streams where the interesting part is 10 minutes apart ⏳
 - Lectures with slow pacing but good content 🧠
+- Transcriptions, training, or video essays that deserve a slower pace 🐌
 
 ## What it does ✨
 
