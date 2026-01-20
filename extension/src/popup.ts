@@ -176,22 +176,24 @@ if (
     debugInfo.textContent = `DEBUG ${__BUILD_GIT_HASH__}.${__BUILD_TIME__}`;
   }
 
-  function saveRules() {
+  function saveRules(showToast: boolean) {
     const normalized = normalizeRules(rules);
     chrome.storage.sync.set({ rules: normalized }, () => {
       rules = normalized;
       renderRules();
-      showStatus('Saved', 'success');
+      if (showToast) {
+        showStatus('Saved', 'success');
+      }
     });
   }
 
-  function scheduleSave() {
+  function scheduleSave(showToast = true) {
     if (saveTimer) {
       window.clearTimeout(saveTimer);
     }
     saveTimer = window.setTimeout(() => {
       saveTimer = null;
-      saveRules();
+      saveRules(showToast);
     }, 500);
   }
 
@@ -292,7 +294,8 @@ if (
   function deleteRule(index: number) {
     rules = rules.filter((_, idx) => idx !== index);
     renderRules();
-    scheduleSave();
+    scheduleSave(false);
+    showStatus('Deleted', 'error');
   }
 
   function updateRule(index: number, field: string, value: string) {

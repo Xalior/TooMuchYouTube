@@ -324,7 +324,7 @@ button:hover {
 }
 
 .status.success {
-  background: #1f6a36;
+  background: #c26a00;
 }
 
 .status.error {
@@ -332,7 +332,7 @@ button:hover {
 }
 
 .status.warning {
-  background: #a35a00;
+  background: #8a6a00;
 }
 
 body:not(.is-debug) .status {
