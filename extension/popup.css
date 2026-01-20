@@ -132,6 +132,17 @@ h2 {
   height: 16px;
 }
 
+.icon-button.small {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+}
+
+.icon-button.small svg {
+  width: 12px;
+  height: 12px;
+}
+
 .github-link {
   width: 28px;
   height: 28px;
@@ -464,14 +475,6 @@ body.not-youtube .bottom-bar .add-controls {
   display: none;
 }
 
-body.not-youtube .bottom-bar .debug-info {
-  display: none;
-}
-
-body.not-youtube .not-youtube-bar {
-  display: inline-flex;
-}
-
 .bottom-bar .add-row {
   grid-template-columns: 130px 1fr 60px 54px;
   gap: 6px;
@@ -512,6 +515,10 @@ body.not-youtube .not-youtube-bar {
   justify-content: space-between;
   gap: 8px;
   width: 100%;
+}
+
+body.not-youtube .not-youtube-bar {
+  display: inline-flex;
 }
 
 .not-youtube-title {

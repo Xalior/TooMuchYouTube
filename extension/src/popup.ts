@@ -26,6 +26,8 @@ const newSpeed = document.getElementById('newSpeed') as HTMLInputElement | null;
 const debugInfo = document.getElementById('debugInfo') as HTMLSpanElement | null;
 const aboutOpen = document.getElementById('aboutOpen') as HTMLButtonElement | null;
 const aboutClose = document.getElementById('aboutClose') as HTMLButtonElement | null;
+const aboutOpenBottom = document.getElementById('aboutOpenBottom') as HTMLButtonElement | null;
+const aboutCloseBottom = document.getElementById('aboutCloseBottom') as HTMLButtonElement | null;
 const aboutPanel = document.getElementById('aboutPanel') as HTMLDivElement | null;
 const aboutBuildMode = document.getElementById('aboutBuildMode') as HTMLSpanElement | null;
 const editor = document.getElementById('editor') as HTMLElement | null;
@@ -43,6 +45,8 @@ if (
   !debugInfo ||
   !aboutOpen ||
   !aboutClose ||
+  !aboutOpenBottom ||
+  !aboutCloseBottom ||
   !aboutPanel ||
   !aboutBuildMode ||
   !editor ||
@@ -150,6 +154,8 @@ if (
     aboutPanel.classList.toggle('hidden', !isOpen);
     aboutOpen.classList.toggle('hidden', isOpen);
     aboutClose.classList.toggle('hidden', !isOpen);
+    aboutOpenBottom.classList.toggle('hidden', isOpen);
+    aboutCloseBottom.classList.toggle('hidden', !isOpen);
   }
 
   function refreshActiveTabState() {
@@ -501,6 +507,14 @@ if (
   });
 
   aboutClose.addEventListener('click', () => {
+    setAboutOpen(false);
+  });
+
+  aboutOpenBottom.addEventListener('click', () => {
+    setAboutOpen(true);
+  });
+
+  aboutCloseBottom.addEventListener('click', () => {
     setAboutOpen(false);
   });
 

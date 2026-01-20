@@ -189,11 +189,13 @@
   var debugInfo = document.getElementById("debugInfo");
   var aboutOpen = document.getElementById("aboutOpen");
   var aboutClose = document.getElementById("aboutClose");
+  var aboutOpenBottom = document.getElementById("aboutOpenBottom");
+  var aboutCloseBottom = document.getElementById("aboutCloseBottom");
   var aboutPanel = document.getElementById("aboutPanel");
   var aboutBuildMode = document.getElementById("aboutBuildMode");
   var editor = document.getElementById("editor");
   var notYoutube = document.getElementById("notYoutube");
-  if (!rulesBody || !status || !addButton || !quickAddChannel || !quickAddVideo || !newType || !newValue || !newSpeed || !debugInfo || !aboutOpen || !aboutClose || !aboutPanel || !aboutBuildMode || !editor || !notYoutube) {
+  if (!rulesBody || !status || !addButton || !quickAddChannel || !quickAddVideo || !newType || !newValue || !newSpeed || !debugInfo || !aboutOpen || !aboutClose || !aboutOpenBottom || !aboutCloseBottom || !aboutPanel || !aboutBuildMode || !editor || !notYoutube) {
     console.warn("TooMuchYouTube popup: missing required elements.");
   } else {
     let isYouTubeUrl = function(url) {
@@ -252,6 +254,8 @@
       aboutPanel.classList.toggle("hidden", !isOpen);
       aboutOpen.classList.toggle("hidden", isOpen);
       aboutClose.classList.toggle("hidden", !isOpen);
+      aboutOpenBottom.classList.toggle("hidden", isOpen);
+      aboutCloseBottom.classList.toggle("hidden", !isOpen);
     }, refreshActiveTabState = function() {
       if (!chrome.tabs?.query) return;
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -284,7 +288,7 @@
         bottomBar.classList.toggle("no-debug", !isDebug);
       }
       if (!isDebug) return;
-      debugInfo.textContent = `DEBUG ${"c1b9f5c"}.${"004049"}`;
+      debugInfo.textContent = `DEBUG ${"2ca19d7"}.${"004913"}`;
     }, renderAboutInfo = function() {
       aboutBuildMode.textContent = "debug";
     }, saveRules = function(showToast) {
@@ -561,6 +565,12 @@
       setAboutOpen(true);
     });
     aboutClose.addEventListener("click", () => {
+      setAboutOpen(false);
+    });
+    aboutOpenBottom.addEventListener("click", () => {
+      setAboutOpen(true);
+    });
+    aboutCloseBottom.addEventListener("click", () => {
       setAboutOpen(false);
     });
     quickAddChannel.addEventListener("click", async () => {
