@@ -357,6 +357,21 @@ if (
     }
   }
 
+  function autoScrollList(clientY: number) {
+    const rect = rulesBody.getBoundingClientRect();
+    const edge = 24;
+    const maxSpeed = 12;
+    if (clientY < rect.top + edge) {
+      const distance = Math.max(0, rect.top + edge - clientY);
+      rulesBody.scrollTop -= Math.min(maxSpeed, distance);
+      return;
+    }
+    if (clientY > rect.bottom - edge) {
+      const distance = Math.max(0, clientY - (rect.bottom - edge));
+      rulesBody.scrollTop += Math.min(maxSpeed, distance);
+    }
+  }
+
   function finalizeDrag() {
     if (dragIndex === null) return;
     if (dragPlaceholder) {
@@ -406,6 +421,7 @@ if (
 
   rulesBody.addEventListener('pointermove', (event) => {
     if (dragPointerId === null || event.pointerId !== dragPointerId) return;
+    autoScrollList(event.clientY);
     updatePlaceholder(event.clientX, event.clientY);
   });
 

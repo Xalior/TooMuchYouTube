@@ -250,9 +250,14 @@
         const url = tab?.url || tab?.pendingUrl || "";
         setEditorVisible(isYouTubeUrl(url));
       });
-    }, showStatus = function(message) {
+    }, showStatus = function(message, tone = "success") {
       status.textContent = message;
-      status.classList.toggle("show", Boolean(message));
+      status.classList.remove("success", "error", "warning");
+      if (message) {
+        status.classList.add("show", tone);
+      } else {
+        status.classList.remove("show");
+      }
       if (!message) return;
       if (statusTimer) {
         window.clearTimeout(statusTimer);
@@ -270,13 +275,13 @@
         bottomBar.classList.toggle("no-debug", !isDebug);
       }
       if (!isDebug) return;
-      debugInfo.textContent = `DEBUG ${"7679c8c"}.${"000534"}`;
+      debugInfo.textContent = `DEBUG ${"440fa3f"}.${"002008"}`;
     }, saveRules = function() {
       const normalized = normalizeRules(rules);
       chrome.storage.sync.set({ rules: normalized }, () => {
         rules = normalized;
         renderRules();
-        showStatus("Saved");
+        showStatus("Saved", "success");
       });
     }, scheduleSave = function() {
       if (saveTimer) {
@@ -402,6 +407,19 @@
       } else {
         rows[rows.length - 1].insertAdjacentElement("afterend", dragPlaceholder);
       }
+    }, autoScrollList = function(clientY) {
+      const rect = rulesBody.getBoundingClientRect();
+      const edge = 24;
+      const maxSpeed = 12;
+      if (clientY < rect.top + edge) {
+        const distance = Math.max(0, rect.top + edge - clientY);
+        rulesBody.scrollTop -= Math.min(maxSpeed, distance);
+        return;
+      }
+      if (clientY > rect.bottom - edge) {
+        const distance = Math.max(0, clientY - (rect.bottom - edge));
+        rulesBody.scrollTop += Math.min(maxSpeed, distance);
+      }
     }, finalizeDrag = function() {
       if (dragIndex === null) return;
       if (dragPlaceholder) {
@@ -481,6 +499,7 @@
     });
     rulesBody.addEventListener("pointermove", (event) => {
       if (dragPointerId === null || event.pointerId !== dragPointerId) return;
+      autoScrollList(event.clientY);
       updatePlaceholder(event.clientX, event.clientY);
     });
     rulesBody.addEventListener("pointerup", (event) => {
@@ -507,7 +526,7 @@
       const value = newValue.value.trim();
       const speed = newSpeed.value.trim();
       if (!value || !speed) {
-        showStatus("Add a match and speed");
+        showStatus("Add a match and speed", "warning");
         return;
       }
       rules = [
@@ -528,13 +547,13 @@
       const tab = await getActiveTab();
       const tabUrl = tab?.url || tab?.pendingUrl || "";
       if (!tab || !isYouTubeUrl(tabUrl)) {
-        showStatus("Open a YouTube tab");
+        showStatus("Open a YouTube tab", "warning");
         return;
       }
       const data = tab.id ? await requestQuickAddData(tab.id) : null;
       const channel = pickChannelCandidate(data?.channelCandidates || []);
       if (!channel) {
-        showStatus("Channel not found");
+        showStatus("Channel not found", "error");
         return;
       }
       newType.value = "channel";
@@ -546,13 +565,13 @@
       const tab = await getActiveTab();
       const tabUrl = tab?.url || tab?.pendingUrl || "";
       if (!tab || !isYouTubeUrl(tabUrl)) {
-        showStatus("Open a YouTube tab");
+        showStatus("Open a YouTube tab", "warning");
         return;
       }
       const data = tab.id ? await requestQuickAddData(tab.id) : null;
       const videoId = data?.videoId || getVideoIdFromUrl(tabUrl);
       if (!videoId) {
-        showStatus("Video ID not found");
+        showStatus("Video ID not found", "error");
         return;
       }
       newType.value = "videoId";
