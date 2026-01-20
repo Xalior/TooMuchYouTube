@@ -270,7 +270,7 @@
         bottomBar.classList.toggle("no-debug", !isDebug);
       }
       if (!isDebug) return;
-      debugInfo.textContent = `DEBUG ${"aaeddb1"}.${"235853"}`;
+      debugInfo.textContent = `DEBUG ${"7679c8c"}.${"000534"}`;
     }, saveRules = function() {
       const normalized = normalizeRules(rules);
       chrome.storage.sync.set({ rules: normalized }, () => {

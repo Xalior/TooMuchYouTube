@@ -283,20 +283,10 @@ button:hover {
   background: #33312e;
 }
 
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .hint {
   margin: 0;
   font-size: 11px;
   color: #5f5b52;
-}
-
-.hint.small {
-  margin-top: -4px;
 }
 
 .status {
@@ -332,10 +322,9 @@ body:not(.is-debug) .status {
 body.not-youtube:not(.is-debug) .status {
   bottom: 26px;
 }
-}
 
 .bottom-bar {
-  padding: 8px 12px 10px;
+  padding: 6px 12px 6px;
   background: #fffdf7;
   border-top: 1px solid #d8d1c3;
   display: flex;
@@ -372,21 +361,29 @@ body.not-youtube .bottom-bar .add-controls {
 }
 
 .bottom-bar button {
-  padding: 4px 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.bottom-bar .quick-btn {
+  padding: 6px 10px;
   font-size: 11px;
 }
 
 .debug-info {
+  display: block;
+  width: 100%;
   font-family: "Consolas", "Courier New", monospace;
   font-size: 10px;
   letter-spacing: 0.04em;
   color: #5f5b52;
   text-align: right;
+  margin-top: 0;
+  padding-bottom: 0;
+  line-height: 1;
 }
 .add-controls {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-
-.bottom-bar {
