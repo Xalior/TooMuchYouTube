@@ -36,7 +36,13 @@ const buildTime = [
   String(now.getMinutes()).padStart(2, '0'),
   String(now.getSeconds()).padStart(2, '0')
 ].join('');
+const buildDate = [
+  ((String(now.getFullYear()).match(/[\s\S]{1,2}/g)))[1],
+  String(now.getMonth() + 1).padStart(2, '0'),
+  String(now.getDate()).padStart(2, '0')
+].join('');
 
+console.info(" BUILD MOMENT: ",buildDate,buildTime);
 const entries = {
   'content': path.join(srcDir, 'content.ts'),
   'page-bridge': path.join(srcDir, 'page-bridge.ts'),
@@ -60,6 +66,7 @@ const builds = Object.entries(entries).map(([name, entryPoint]) => {
     define: {
       __BUILD_MODE__: JSON.stringify(buildMode),
       __BUILD_GIT_HASH__: JSON.stringify(gitHash),
+      __BUILD_DATE__: JSON.stringify(buildDate),
       __BUILD_TIME__: JSON.stringify(buildTime)
     }
   });

@@ -1,6 +1,6 @@
 {
   "name": "com.xalior.chrome.toomuchyoutube",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Build tools for the TooMuchYouTube extension.",
   "scripts": {

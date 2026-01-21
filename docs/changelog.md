@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.3.1 - The underside the mint leaf
+## 0.3.2 - Public Debuggery 🐛
+
+- Toggle debug mode at runtime in prod builds.
+
+## 0.3.1 - The underside of the mint leaf
 
 - Match the non-YouTube footer icons to the topbar sizing and spacing.
 - Keep the bottom bar steady while the About panel toggles.

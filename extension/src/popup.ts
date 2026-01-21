@@ -203,7 +203,7 @@ if (
       appLogo.classList.remove('debug-rotated');
     }
     if (debugEnabled) {
-      debugInfo.textContent = `DEBUG ${__BUILD_GIT_HASH__}.${__BUILD_TIME__}`;
+      debugInfo.textContent = `DEBUG ${__BUILD_GIT_HASH__}.${__BUILD_DATE__}.${__BUILD_TIME__}`;
     } else {
       debugInfo.textContent = '';
     }
