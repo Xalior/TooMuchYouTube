@@ -100,6 +100,12 @@ h2 {
   height: 64px;
   border-radius: 6px;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+  transform-origin: center;
+}
+
+.logo.debug-rotated {
+  transform: rotate(180deg);
 }
 
 .header-actions {

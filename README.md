@@ -37,6 +37,7 @@ Version: 0.3.1 · Changelog: [docs/changelog.md](docs/changelog.md)
 ## Tech details
 
 More on how the extension is wired is in `docs/architecture.md`.
+For automation notes, see `AGENTS.md`.
 
 Note: Shorts support is still mostly untested... this a measured combination of (1) a principled stand against vertical serotonin powered doom-scrolling, and (2) a deep understanding that no-one watches those things really, anyways... I’ll get to it, when Shorts get worth watching.  But, as it is, Shorts keep happening to us, not the other way around... 🙄📱 
 

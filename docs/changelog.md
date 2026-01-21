@@ -4,6 +4,7 @@
 
 - Match the non-YouTube footer icons to the topbar sizing and spacing.
 - Keep the bottom bar steady while the About panel toggles.
+- Make the non-YouTube About button toggle in place.
 
 ## 0.3.0 - Minted UI
 

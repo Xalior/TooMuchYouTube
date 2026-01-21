@@ -26,6 +26,7 @@ const newSpeed = document.getElementById('newSpeed') as HTMLInputElement | null;
 const debugInfo = document.getElementById('debugInfo') as HTMLSpanElement | null;
 const aboutOpen = document.getElementById('aboutOpen') as HTMLButtonElement | null;
 const aboutOpenBottom = document.getElementById('aboutOpenBottom') as HTMLButtonElement | null;
+const appLogo = document.getElementById('appLogo') as HTMLImageElement | null;
 const aboutPanel = document.getElementById('aboutPanel') as HTMLDivElement | null;
 const aboutBuildMode = document.getElementById('aboutBuildMode') as HTMLSpanElement | null;
 const editor = document.getElementById('editor') as HTMLElement | null;
@@ -43,6 +44,7 @@ if (
   !debugInfo ||
   !aboutOpen ||
   !aboutOpenBottom ||
+  !appLogo ||
   !aboutPanel ||
   !aboutBuildMode ||
   !editor ||
@@ -68,6 +70,9 @@ if (
   let saveTimer: number | null = null;
   let statusTimer: number | null = null;
   let lastEditorVisible = true;
+  let debugEnabled = __BUILD_MODE__ === 'debug';
+  const isProdBuild = __BUILD_MODE__ === 'prod';
+  const debugStorageKey = 'debugEnabled';
   function isYouTubeUrl(url: string) {
     if (!url) return false;
     try {
@@ -185,16 +190,41 @@ if (
     }, 1500);
   }
 
-  function renderDebugBar() {
-    const isDebug = __BUILD_MODE__ === 'debug';
-    document.body.classList.toggle('is-debug', isDebug);
-    debugInfo.classList.toggle('hidden', !isDebug);
+  function applyDebugState() {
+    document.body.classList.toggle('is-debug', debugEnabled);
+    debugInfo.classList.toggle('hidden', !debugEnabled);
     const bottomBar = document.querySelector('.bottom-bar');
     if (bottomBar instanceof HTMLElement) {
-      bottomBar.classList.toggle('no-debug', !isDebug);
+      bottomBar.classList.toggle('no-debug', !debugEnabled);
     }
-    if (!isDebug) return;
-    debugInfo.textContent = `DEBUG ${__BUILD_GIT_HASH__}.${__BUILD_TIME__}`;
+    if (isProdBuild) {
+      appLogo.classList.toggle('debug-rotated', debugEnabled);
+    } else {
+      appLogo.classList.remove('debug-rotated');
+    }
+    if (debugEnabled) {
+      debugInfo.textContent = `DEBUG ${__BUILD_GIT_HASH__}.${__BUILD_TIME__}`;
+    } else {
+      debugInfo.textContent = '';
+    }
+  }
+
+  function setDebugEnabled(nextValue: boolean, persist: boolean) {
+    debugEnabled = nextValue;
+    applyDebugState();
+    if (persist) {
+      chrome.storage.local.set({ [debugStorageKey]: debugEnabled });
+    }
+  }
+
+  function initDebugState() {
+    if (!isProdBuild) {
+      setDebugEnabled(true, false);
+      return;
+    }
+    chrome.storage.local.get({ [debugStorageKey]: false }, (data) => {
+      setDebugEnabled(Boolean(data[debugStorageKey]), false);
+    });
   }
 
   function renderAboutInfo() {
@@ -510,6 +540,13 @@ if (
     setAboutOpen(!document.body.classList.contains('about-open'));
   });
 
+  appLogo.addEventListener('click', (event) => {
+    if (!isProdBuild) return;
+    if (event.detail === 3) {
+      setDebugEnabled(!debugEnabled, true);
+    }
+  });
+
   quickAddChannel.addEventListener('click', async () => {
     const tab = await getActiveTab();
     const tabUrl = tab?.url || tab?.pendingUrl || '';
@@ -553,11 +590,12 @@ if (
     renderRules();
     refreshActiveTabState();
     refreshQuickAddState();
-    renderDebugBar();
+    initDebugState();
     renderAboutInfo();
     setAboutOpen(false);
   });
 
   refreshActiveTabState();
   refreshQuickAddState();
+  initDebugState();
 }
