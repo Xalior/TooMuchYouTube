@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.3 - Duck's Gone Done 🦆
+
+- General Release - remove excess permissions.
+
 ## 0.3.2 - Public Debuggery 🐛
 
 - Toggle debug mode at runtime in prod builds.
