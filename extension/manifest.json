@@ -4,9 +4,7 @@
   "version": "0.3.2",
   "description": "Adjust YouTube playback speed for matching channels, video IDs, or titles.",
   "permissions": [
-    "storage",
-    "activeTab",
-    "tabs"
+    "storage"
   ],
   "action": {
     "default_title": "TooMuchYouTube",

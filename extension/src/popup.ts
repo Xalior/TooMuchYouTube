@@ -1,4 +1,4 @@
-import { isYouTubeHost } from './domains';
+export {};
 
 type RuleType = 'channel' | 'title' | 'videoId';
 
@@ -73,33 +73,6 @@ if (
   let debugEnabled = __BUILD_MODE__ === 'debug';
   const isProdBuild = __BUILD_MODE__ === 'prod';
   const debugStorageKey = 'debugEnabled';
-  function isYouTubeUrl(url: string) {
-    if (!url) return false;
-    try {
-      const parsed = new URL(url);
-      return isYouTubeHost(parsed.hostname);
-    } catch (err) {
-      return false;
-    }
-  }
-
-  function getVideoIdFromUrl(url: string) {
-    if (!url) return '';
-    try {
-      const parsed = new URL(url);
-      if (parsed.hostname === 'youtu.be') {
-        return parsed.pathname.split('/')[1]?.split(/[?&#/]/)[0] || '';
-      }
-      const v = parsed.searchParams.get('v');
-      if (v) return v;
-      if (parsed.pathname.startsWith('/shorts/')) {
-        return parsed.pathname.split('/shorts/')[1].split(/[?&#/]/)[0] || '';
-      }
-      return '';
-    } catch (err) {
-      return '';
-    }
-  }
 
   function pickChannelCandidate(candidates: string[]) {
     const cleaned = candidates.map((value) => value.trim()).filter(Boolean);
@@ -132,14 +105,20 @@ if (
 
   async function refreshQuickAddState() {
     const tab = await getActiveTab();
-    if (!tab || !isYouTubeUrl(tab.url || tab.pendingUrl || '')) {
+    const tabId = tab?.id;
+    if (!tabId) {
       quickAddChannel.disabled = true;
       quickAddVideo.disabled = true;
       return;
     }
 
-    const data = tab.id ? await requestQuickAddData(tab.id) : null;
-    const videoId = data?.videoId || getVideoIdFromUrl(tab.url || tab.pendingUrl || '');
+    const data = await requestQuickAddData(tabId);
+    if (!data) {
+      quickAddChannel.disabled = true;
+      quickAddVideo.disabled = true;
+      return;
+    }
+    const videoId = data.videoId;
     const channel = pickChannelCandidate(data?.channelCandidates || []);
     quickAddVideo.disabled = !videoId;
     quickAddChannel.disabled = !channel;
@@ -167,8 +146,13 @@ if (
     if (!chrome.tabs?.query) return;
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = tabs && tabs[0] ? tabs[0] : null;
-      const url = tab?.url || tab?.pendingUrl || '';
-      setEditorVisible(isYouTubeUrl(url));
+      if (!tab?.id) {
+        setEditorVisible(false);
+        return;
+      }
+      requestQuickAddData(tab.id).then((data) => {
+        setEditorVisible(Boolean(data));
+      });
     });
   }
 
@@ -549,12 +533,16 @@ if (
 
   quickAddChannel.addEventListener('click', async () => {
     const tab = await getActiveTab();
-    const tabUrl = tab?.url || tab?.pendingUrl || '';
-    if (!tab || !isYouTubeUrl(tabUrl)) {
+    const tabId = tab?.id;
+    if (!tabId) {
       showStatus('Open a YouTube tab', 'warning');
       return;
     }
-    const data = tab.id ? await requestQuickAddData(tab.id) : null;
+    const data = await requestQuickAddData(tabId);
+    if (!data) {
+      showStatus('Open a YouTube tab', 'warning');
+      return;
+    }
     const channel = pickChannelCandidate(data?.channelCandidates || []);
     if (!channel) {
       showStatus('Channel not found', 'error');
@@ -568,13 +556,17 @@ if (
 
   quickAddVideo.addEventListener('click', async () => {
     const tab = await getActiveTab();
-    const tabUrl = tab?.url || tab?.pendingUrl || '';
-    if (!tab || !isYouTubeUrl(tabUrl)) {
+    const tabId = tab?.id;
+    if (!tabId) {
       showStatus('Open a YouTube tab', 'warning');
       return;
     }
-    const data = tab.id ? await requestQuickAddData(tab.id) : null;
-    const videoId = data?.videoId || getVideoIdFromUrl(tabUrl);
+    const data = await requestQuickAddData(tabId);
+    if (!data) {
+      showStatus('Open a YouTube tab', 'warning');
+      return;
+    }
+    const videoId = data.videoId;
     if (!videoId) {
       showStatus('Video ID not found', 'error');
       return;
