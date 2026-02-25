@@ -481,9 +481,14 @@ body.not-youtube .bottom-bar .add-controls {
   font-size: 11px;
 }
 
-.debug-info {
-  display: block;
+.debug-bar {
+  display: flex;
+  align-items: center;
   width: 100%;
+  gap: 6px;
+}
+
+.debug-info {
   font-family: "Consolas", "Courier New", monospace;
   font-size: 10px;
   letter-spacing: 0.04em;
@@ -492,6 +497,30 @@ body.not-youtube .bottom-bar .add-controls {
   margin-top: 0;
   padding-bottom: 0;
   line-height: 1;
+  flex: 1;
+}
+
+.debug-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.bottom-bar .debug-btn {
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 9px;
+  padding: 0 4px;
+  border: 1px solid #d8d1c3;
+  border-radius: 2px;
+  line-height: 1;
+  background: #f5f0e8;
+  color: #5f5b52;
+  cursor: pointer;
+}
+
+.bottom-bar .debug-btn:hover {
+  background: #ebe5d9;
+  color: #3a3832;
 }
 
 .not-youtube-bar {
@@ -505,7 +534,7 @@ body.not-youtube .not-youtube-bar {
   order: 1;
 }
 
-body.not-youtube .debug-info {
+body.not-youtube .debug-bar {
   display: inline-flex;
   width: auto;
   margin-left: auto;

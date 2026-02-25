@@ -24,6 +24,10 @@ const newType = document.getElementById('newType') as HTMLSelectElement | null;
 const newValue = document.getElementById('newValue') as HTMLInputElement | null;
 const newSpeed = document.getElementById('newSpeed') as HTMLInputElement | null;
 const debugInfo = document.getElementById('debugInfo') as HTMLSpanElement | null;
+const debugBar = document.getElementById('debugBar') as HTMLDivElement | null;
+const exportSettings = document.getElementById('exportSettings') as HTMLButtonElement | null;
+const importSettings = document.getElementById('importSettings') as HTMLButtonElement | null;
+const importFile = document.getElementById('importFile') as HTMLInputElement | null;
 const aboutOpen = document.getElementById('aboutOpen') as HTMLButtonElement | null;
 const aboutOpenBottom = document.getElementById('aboutOpenBottom') as HTMLButtonElement | null;
 const appLogo = document.getElementById('appLogo') as HTMLImageElement | null;
@@ -42,6 +46,10 @@ if (
   !newValue ||
   !newSpeed ||
   !debugInfo ||
+  !debugBar ||
+  !exportSettings ||
+  !importSettings ||
+  !importFile ||
   !aboutOpen ||
   !aboutOpenBottom ||
   !appLogo ||
@@ -176,7 +184,7 @@ if (
 
   function applyDebugState() {
     document.body.classList.toggle('is-debug', debugEnabled);
-    debugInfo.classList.toggle('hidden', !debugEnabled);
+    debugBar.classList.toggle('hidden', !debugEnabled);
     const bottomBar = document.querySelector('.bottom-bar');
     if (bottomBar instanceof HTMLElement) {
       bottomBar.classList.toggle('no-debug', !debugEnabled);
@@ -575,6 +583,44 @@ if (
     newValue.value = videoId;
     newSpeed.focus();
     newSpeed.select();
+  });
+
+  exportSettings.addEventListener('click', () => {
+    const data = JSON.stringify({ rules }, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'toomuchyoutube-settings.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showStatus('Exported', 'success');
+  });
+
+  importSettings.addEventListener('click', () => {
+    importFile.value = '';
+    importFile.click();
+  });
+
+  importFile.addEventListener('change', () => {
+    const file = importFile.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result as string);
+        if (!Array.isArray(data.rules)) {
+          showStatus('Invalid file', 'error');
+          return;
+        }
+        rules = data.rules;
+        saveRules(false);
+        showStatus('Imported', 'success');
+      } catch {
+        showStatus('Invalid JSON', 'error');
+      }
+    };
+    reader.readAsText(file);
   });
 
   chrome.storage.sync.get(defaults, (data) => {

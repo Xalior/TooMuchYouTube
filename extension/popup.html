@@ -97,7 +97,14 @@
           <button id="addRule" type="button" class="btn-positive">Add</button>
         </div>
       </div>
-      <span id="debugInfo" class="debug-info hidden"></span>
+      <div class="debug-bar hidden" id="debugBar">
+        <span id="debugInfo" class="debug-info"></span>
+        <div class="debug-actions">
+          <button id="exportSettings" type="button" class="debug-btn" title="Export settings">Export</button>
+          <button id="importSettings" type="button" class="debug-btn" title="Import settings">Import</button>
+          <input id="importFile" type="file" accept=".json" class="hidden" />
+        </div>
+      </div>
       <div class="not-youtube-bar">
         <span class="not-youtube-title">TooMuchYouTube</span>
         <div class="not-youtube-actions">
