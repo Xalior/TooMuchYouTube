@@ -1,4 +1,4 @@
-# TooMuchYouTube 🎬⚡️
+# TooMuchYouTube 📺
 
 <div align="center">
   <img src="docs/icon.png" width="420" alt="TooMuchYouTube icon">
